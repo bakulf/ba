@@ -8,4 +8,4 @@ isEmpty( ISQT4 ) {
 
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = src
+SUBDIRS  = src test

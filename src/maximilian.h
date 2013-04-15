@@ -229,8 +229,6 @@ public:
 	{
 		if (myData) free(myData);
         if (temp) free(temp);
-        printf("freeing SampleData");
-
 	}
 	
 	maxiSample(): myData(NULL),temp(NULL), position(0), recordPosition(0), myChannels(1), mySampleRate(maxiSettings::sampleRate) {};

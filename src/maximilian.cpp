@@ -543,8 +543,6 @@ bool maxiSample::loadOgg(string fileName, int channel) {
 //    cout << fileName << endl;
     myDataSize = stb_vorbis_decode_filename(const_cast<char*>(fileName.c_str()), &channelx, &temp);
     result = myDataSize > 0;
-    printf("\nchannels = %d\nlength = %d",channelx,myDataSize);
-    printf("\n");
     myChannels=(short)channelx;
     length=myDataSize;
     mySampleRate=44100;

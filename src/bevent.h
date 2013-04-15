@@ -4,16 +4,22 @@
 #include <QObject>
 #include <QMap>
 
-// Base class for events
+class BApplication;
+
 class BEvent : public QObject
 {
   Q_OBJECT
+  Q_DISABLE_COPY(BEvent)
 
 public:
-  BEvent(QObject* aParent);
+  BEvent(BApplication* aParent, QString aCode);
   virtual ~BEvent();
 
-  virtual void run();
+  void run();
+
+private:
+  BApplication* mApp;
+  QString mCode;
 };
 
 class BEventManager : public QObject

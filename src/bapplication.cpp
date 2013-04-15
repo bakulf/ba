@@ -1,13 +1,14 @@
 #include "bapplication.h"
 #include "baudio.h"
 #include "bbuffer.h"
-#include "beventquit.h"
-#include "beventrec.h"
-#include "beventplay.h"
+#include "bevent.h"
+#include "bscriptengine.h"
+#include "btimer.h"
+#include "bmutexlocker.h"
 
+#include <QDomElement>
 #include <QSocketNotifier>
 #include <QStringList>
-#include <QSettings>
 #include <QTimer>
 #include <QFile>
 
@@ -17,32 +18,38 @@
 
 BApplication::BApplication(int argc, char** argv)
 : QCoreApplication(argc, argv)
+, mTerminalInitialized(false)
 , mEscapeLoop(0)
 {
   QStringList args = arguments();
   if (args.length() > 1) {
     mConfigFile = args[1];
   }
+
+  mTimer = new BTimer(this);
+  mScriptEngine = new BScriptEngine(this);
 }
 
 BApplication::~BApplication()
 {
+  stopAudio();
+  resetTerminal();
 }
 
 bool
 BApplication::init()
 {
-  return readConfig() && initTerminal() && initAudio();
+  return readConfig() && initAudio() && initTerminal();
 }
 
 int
 BApplication::exec()
 {
   // Notification for the keyboard input
-  QSocketNotifier* notifier = new QSocketNotifier(STDIN_FILENO,
-                                                  QSocketNotifier::Read,
-                                                  this);
-  connect(notifier, SIGNAL(activated(int)),
+  mStdinNotifier = new QSocketNotifier(STDIN_FILENO,
+                                       QSocketNotifier::Read,
+                                       this);
+  connect(mStdinNotifier, SIGNAL(activated(int)),
           this, SLOT(readStdin(int)));
 
   // Refresh of the screen
@@ -61,10 +68,7 @@ BApplication::exec()
 void
 BApplication::quit()
 {
-  resetTerminal();
-  stopAudio();
   QCoreApplication::quit();
-
   printf("Bye!\n");
 }
 
@@ -80,8 +84,10 @@ BApplication::readStdin(int)
   char buf;
 
   // Error reading...
-  if (read(STDIN_FILENO, &buf, 1) < 0) {
-    quit();
+  if (read(STDIN_FILENO, &buf, 1) <= 0) {
+    mStdinNotifier->deleteLater();
+    mStdinNotifier = NULL;
+    return;
   }
 
   mEventManager.handle(buf);
@@ -92,43 +98,90 @@ BApplication::refreshScreen()
 {
   char str[1024];
   int line = 0;
+  size_t size;
+
+  BMUTEXLOCKER
 
   foreach (BBuffer* buffer, mBuffers) {
     // Line: line+1
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
-    writeES(str, strlen(str));
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+    writeES(str, size);
 
-    snprintf(str, sizeof(str), "Buffer - key: %c%s%s", buffer->key().toAscii(),
-             buffer == mCurrentBuffer ? " -SELECTED- " : "",
-             buffer->playing() ? " -PLAYING- " : "");
-    writeReal(str, strlen(str));
+    size = snprintf(str, sizeof(str), "Buffer: %s%s\n",
+                    buffer == mCurrentBuffer ? " -SELECTED- " : "",
+                    buffer->playing() ? " -PLAYING- " : "");
+    writeReal(str, size);
 
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
-    writeES(str, strlen(str));
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
-    writeES(str, strlen(str));
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
-    writeES(str, strlen(str));
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
-    writeES(str, strlen(str));
-  }
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+    writeES(str, size);
+    size = snprintf(str, sizeof(str), "  %s\n", qPrintable(buffer->info()));
+    writeReal(str, size);
 
-  // This is just for fun:
-  if (mEscapeSequence) {
-    struct winsize ws; 
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+    writeES(str, size);
+    size = snprintf(str, sizeof(str), "  Loop: %3s - Speed: %f - Volume: ",
+                    buffer->loop() ? "yes" : "no",
+                    buffer->speed());
+    writeReal(str, size);
 
-    ioctl(1, TIOCGWINSZ, &ws);
-    snprintf(str, sizeof(str), "\033[%d;0f\033[K", ws.ws_row);
-    writeES(str, strlen(str));
+    QString volume = BEngine::writeVolume(buffer->engine());
+    writeReal(qPrintable(volume), volume.length());
 
-    if (mAudio.recording()) {
-      snprintf(str, sizeof(str), "Recording: %s", qPrintable(mAudio.recordingStr()));
-      writeReal(str, strlen(str));
+    QStringList filters = BEngine::writeFilters(buffer->engine());
+    foreach (QString filter, filters) {
+      size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+      writeES(str, size);
+
+      size = snprintf(str, sizeof(str), "%s", qPrintable(filter));
+      writeReal(str, size);
     }
 
-    snprintf(str, sizeof(str), "\033[%d;%df", ws.ws_row, ws.ws_col);
-    writeES(str, strlen(str));
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+    writeES(str, size);
+  }
 
+  struct winsize ws;
+  memset(&ws, 0, sizeof(winsize));
+
+  QStringList filters = BEngine::writeFilters(mAudio.engine());
+
+  if (mEscapeSequence) {
+    ioctl(1, TIOCGWINSZ, &ws);
+
+    for (; line < ws.ws_row - filters.length() - 1;) {
+      size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+      writeES(str, size);
+    }
+  }
+
+  foreach (QString filter, filters) {
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K",  ++line);
+    writeES(str, size);
+
+    size = snprintf(str, sizeof(str), "%s",  qPrintable(filter));
+    writeReal(str, size);
+  }
+
+  size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
+  writeES(str, size);
+
+  size = snprintf(str, sizeof(str), "Volume: ");
+  writeReal(str, size);
+
+  QString volume = BEngine::writeVolume(mAudio.engine());
+  writeReal(qPrintable(volume), volume.length());
+
+  if (mAudio.recording()) {
+    size = snprintf(str, sizeof(str), " - Recording: %s\r",
+                    qPrintable(mAudio.recordingStr()));
+    writeReal(str, size);
+  }
+
+  if (mEscapeSequence) {
+    size = snprintf(str, sizeof(str), "\033[%d;%df", ws.ws_row, ws.ws_col);
+    writeES(str, size);
+
+    // This is just for fun:
     char buffer[] = "-\\|/";
     if (mEscapeLoop > 3)
       mEscapeLoop = 0;
@@ -145,71 +198,84 @@ BApplication::readConfig()
     return false;
   }
 
-  QSettings settings(mConfigFile, QSettings::IniFormat);
-
-  // Audio Settings
-  if (settings.contains("audio/channels")) {
-    maxiSettings::channels = settings.value("audio/channels").toInt();
+  QFile file(mConfigFile);
+  if (!file.open(QIODevice::ReadOnly)) {
+    std::cerr << "Error: the config file '" << qPrintable(mConfigFile)
+              << "' cannot be opened." << std::endl;
+    return false;
   }
 
-  if (settings.contains("audio/sampleRate")) {
-    maxiSettings::sampleRate = settings.value("audio/sampleRate").toInt();
+  QDomDocument dom;
+  QString errorMsg;
+  int errorLine(0);
+  int errorColumn(0);
+  if (!dom.setContent(&file, false, &errorMsg, &errorLine, &errorColumn)) {
+    std::cerr << "Error: the config file '" << qPrintable(mConfigFile)
+              << "' cannot be parsed: " << qPrintable(errorMsg)
+              << "(" << errorLine << ":" << errorColumn << ")" << std::endl;
+    return false;
   }
 
-  if (settings.contains("audio/bufferSize")) {
-    maxiSettings::bufferSize = settings.value("audio/bufferSize").toInt();
+  QDomElement root = dom.documentElement();
+  if (root.tagName() != "BA") {
+    std::cerr << "Error: the config file '"
+              << qPrintable(mConfigFile)
+              << "' is not valid for this application." << std::endl;
+    return false;
   }
 
-  // Terminal
-  mEscapeSequence = settings.value("terminal/escapeSequence").toBool();
+  QDomNode n = root.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
 
-  // Global Keys - quit
-  if (settings.contains("globalKeys/quit")) {
-    QString value = settings.value("globalKeys/quit").toString();
-    if (value.length() < 0 || value.length() > 1) {
-      std::cerr << "The globalKeys/quit must be 1 single char." << std::endl;
-      return false;
+    if (e.tagName() == "audio") {
+      if (!readConfigAudio(e)) {
+        return false;
+      }
     }
 
-    mEventManager.add(value[0], new BEventQuit(this));
+    if (e.tagName() == "terminal") {
+      if (!readConfigTerminal(e)) {
+        return false;
+      }
+    }
+
+    else if (e.tagName() == "code") {
+      if (!readConfigCode(e)) {
+        return false;
+      }
+    }
   }
 
-  // Global Keys - rec
-  if (settings.contains("globalKeys/rec")) {
-    QString value = settings.value("globalKeys/rec").toString();
-    if (value.length() < 0 || value.length() > 1) {
-      std::cerr << "The globalKeys/rec must be 1 single char." << std::endl;
-      return false;
+  return true;
+}
+
+bool
+BApplication::readConfigAudio(QDomElement& aElement)
+{
+  QDomNode n = aElement.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
+
+    if (e.tagName() == "channels") {
+      maxiSettings::channels = e.text().toInt();
     }
 
-    mEventManager.add(value[0], new BEventRec(this));
-  }
-
-  if (settings.contains("globalKeys/play")) {
-    QString value = settings.value("globalKeys/play").toString();
-    if (value.length() < 0 || value.length() > 1) {
-      std::cerr << "The globalKeys/play must be 1 single char." << std::endl;
-      return false;
+    if (e.tagName() == "sampleRate") {
+      maxiSettings::sampleRate = e.text().toInt();
     }
 
-    mEventManager.add(value[0], new BEventPlay(this));
-  }
-
-  // List of buffers
-  QStringList groups = settings.childGroups();
-  for (int i = 0; ; ++i) {
-    char key[256];
-    snprintf(key, sizeof(key), "buffer_%d", i);
-    if (!groups.contains(key)) {
-      break;
+    if (e.tagName() == "bufferSize") {
+      maxiSettings::bufferSize = e.text().toInt();
     }
 
-    BBuffer *buffer = BBuffer::create(this, settings, i);
-    if (!buffer) {
-      return false;
+    if (e.tagName() == "buffers") {
+      int buffers = e.text().toInt();
+      for (int i = 0; i < buffers; ++i) {
+        BBuffer *buffer = new BBuffer(this);
+        mBuffers << buffer;
+      }
     }
-
-    mBuffers << buffer;
   }
 
   if (!mBuffers.length()) {
@@ -218,15 +284,54 @@ BApplication::readConfig()
   }
 
   mCurrentBuffer = mBuffers[0];
+  return true;
+}
 
-  // FIXME: all the fun part
+bool
+BApplication::readConfigTerminal(QDomElement& aElement)
+{
+  QDomNode n = aElement.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
+
+    if (e.tagName() == "escapeSequence") {
+      mEscapeSequence = e.text() == "true";
+    }
+  }
+
+  return true;
+}
+
+bool
+BApplication::readConfigCode(QDomElement& aElement)
+{
+  QDomNode n = aElement.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
+
+    if (e.tagName() == "key") {
+      if (!e.hasAttribute("char")) {
+        std::cerr << "Any key must have a char attribute." << std::endl;
+        return false;
+      }
+
+      QString ch = e.attribute("char");
+      if (ch.length() != 1) {
+        std::cerr << "Any key must have a char attribute." << std::endl;
+        return false;
+      }
+
+      mEventManager.add(e.attribute("char")[0], new BEvent(this, e.text()));
+    }
+  }
+
   return true;
 }
 
 bool
 BApplication::initAudio()
 {
-  return mAudio.init();
+  return mAudio.init(this);
 }
 
 void
@@ -240,27 +345,31 @@ BApplication::initTerminal()
 {
   if (tcgetattr(STDIN_FILENO, &mOldTerminalSettings)) {
     std::cerr << "Error reading the terminal settings." << std::endl;
-    return false;
+    mEscapeSequence = false;
+    return true;
   }
 
   termios newSettings;
   memcpy(&newSettings, &mOldTerminalSettings, sizeof(termios));
   newSettings.c_lflag &= ~(ICANON | ECHO);
   newSettings.c_cc[VTIME] = 0;
-  newSettings.c_cc[VMIN] = 1; 
+  newSettings.c_cc[VMIN] = 1;
 
   if (tcsetattr(STDIN_FILENO, TCSANOW, &newSettings)) {
     std::cerr << "Error changing the terminal settings." << std::endl;
     return false;
   }
 
+  mTerminalInitialized = true;
   return true;
 }
 
 void
 BApplication::resetTerminal()
 {
-  tcsetattr(STDIN_FILENO, TCSANOW, &mOldTerminalSettings);
+  if (mTerminalInitialized) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &mOldTerminalSettings);
+  }
 }
 
 void
