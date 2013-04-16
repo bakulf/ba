@@ -80,10 +80,39 @@ BScriptEngine::makeEngine(QScriptEngine* aEngine, QScriptValue aValue)
 // BBUFFER FUNCTIONS ----------------------------------------------------------
 
 QScriptValue
+BScriptEngine::funcDataType(QScriptContext* aContext,
+                            QScriptEngine*)
+{
+  BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
+
+  QString type;
+  switch (buffer->typeData()) {
+    case BBuffer::NoData:
+      break;
+
+    case BBuffer::RecData:
+      type.append("rec");
+      break;
+
+    case BBuffer::NoiseData:
+      type.append("noise");
+      break;
+  }
+
+  return QScriptValue(type);
+}
+
+QScriptValue
 BScriptEngine::funcPlay(QScriptContext* aContext,
                         QScriptEngine*)
 {
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
+
+  if (aContext->argumentCount() > 0) {
+    QString type = aContext->argument(0).toString();
+    buffer->setTypeDataString(type);
+  }
+
   buffer->play();
   return QScriptValue();
 }
@@ -314,6 +343,10 @@ BScriptEngine::makeBufferObject(BScriptEngine* aEngine,
   // void play()
   obj.setProperty("play", aEngine->newFunction(funcPlay));
 
+  // dataType
+  obj.setProperty("dataType", aEngine->newFunction(funcDataType),
+    QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
+
   // void stop()
   obj.setProperty("stop", aEngine->newFunction(funcStop));
 
@@ -352,16 +385,22 @@ BScriptEngine::funcRecStop(QScriptContext* aContext,
                            QScriptEngine* aEngine)
 {
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BBuffer* buffer = static_cast<BBuffer*>(aContext->argument(0).toQObject());
-
-  if (!buffer) {
-    return aContext->throwError(QScriptContext::SyntaxError,
-                                "recStop(buffer) wrongly used.");
-  }
 
   size_t size;
   double* data = engine->mApp->audio().recStop(&size);
-  buffer->setData(data, size);
+
+  if (!aContext->argumentCount()) {
+    free(data);
+  } else {
+    BBuffer* buffer = static_cast<BBuffer*>(aContext->argument(0).toQObject());
+
+    if (!buffer) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "recStop(buffer) wrongly used.");
+    }
+
+    buffer->setRecData(data, size);
+  }
 
   return QScriptValue();
 }

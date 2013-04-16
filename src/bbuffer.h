@@ -15,7 +15,18 @@ public:
   BBuffer(QObject* aParent);
   virtual ~BBuffer();
 
-  void setData(double* aData, size_t aSize);
+  enum TypeData {
+    NoData,
+    RecData,
+    NoiseData
+  };
+
+  void setRecData(double* aData, size_t aSize);
+  void setNoiseData();
+
+  void setTypeDataString(QString& aType);
+  void setTypeData(TypeData aType) { mType = aType; }
+  TypeData typeData() const { return mType; }
 
   bool loop() const { return mLoop; }
   void setLoop(bool aLoop) { mLoop = aLoop; }
@@ -39,6 +50,8 @@ private:
   void outputNoLoop(double* aOutput);
 
 private:
+  TypeData mType;
+
   double* mData;
   size_t mDataSize;
   double mDataPosition;

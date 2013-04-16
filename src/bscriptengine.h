@@ -67,6 +67,9 @@ private:
   static QScriptValue funcSpeed(QScriptContext* aContext,
                                QScriptEngine* aEngine);
 
+  static QScriptValue funcDataType(QScriptContext* aContext,
+                                   QScriptEngine* aEngine);
+
   static QScriptValue funcPlay(QScriptContext* aContext,
                                QScriptEngine* aEngine);
 

@@ -10,6 +10,7 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QTimer>
+#include <QTime>
 #include <QFile>
 
 #include <sys/types.h>
@@ -28,6 +29,10 @@ BApplication::BApplication(int argc, char** argv)
 
   mTimer = new BTimer(this);
   mScriptEngine = new BScriptEngine(this);
+
+  // Random numbers
+  QTime midnight(0, 0, 0);
+  qsrand(midnight.secsTo(QTime::currentTime()));
 }
 
 BApplication::~BApplication()

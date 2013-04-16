@@ -7,6 +7,7 @@
 
 BBuffer::BBuffer(QObject *aParent)
 : QObject(aParent)
+, mType(NoData)
 , mData(NULL)
 , mDataSize(0)
 , mDataPosition(0.0)
@@ -21,7 +22,7 @@ BBuffer::~BBuffer()
 }
 
 void
-BBuffer::setData(double* aData, size_t aSize)
+BBuffer::setRecData(double* aData, size_t aSize)
 {
   if (mData) {
     free(mData);
@@ -30,6 +31,30 @@ BBuffer::setData(double* aData, size_t aSize)
   mData = aData;
   mDataSize = aSize;
   mDataPosition = 0.0;
+
+  mType = mData ? RecData : NoData;
+}
+
+void
+BBuffer::setNoiseData()
+{
+  mType = NoiseData;
+}
+
+void
+BBuffer::setTypeDataString(QString& aType)
+{
+  if (aType == "rec") {
+    setTypeData(mData ? RecData : NoData);
+    return;
+  }
+
+  if(aType == "noise") {
+    setTypeData(NoiseData);
+    return;
+  }
+
+  setTypeData(NoData);
 }
 
 void
@@ -50,11 +75,19 @@ BBuffer::info() const
 {
   QString msg;
 
-  if (mData) {
-    msg.append("Data: ");
-    msg.append(BAudio::byte2str(mDataSize));
-  } else {
-    msg.append("No Data");
+  switch (mType) {
+    case NoData:
+      msg.append("No Data");
+      break;
+
+    case RecData:
+      msg.append("Data: ");
+      msg.append(BAudio::byte2str(mDataSize));
+      break;
+
+    case NoiseData:
+      msg.append("Noise Data");
+      break;
   }
 
   return msg;
@@ -63,12 +96,22 @@ BBuffer::info() const
 bool
 BBuffer::canPlay() const
 {
-  if (!mPlaying || !mData) {
+  if (!mPlaying) {
     return false;
   }
 
-  if (!mLoop && (size_t)mDataPosition >= mDataSize) {
-    return false;
+  switch (mType) {
+    case NoData:
+      return false;
+
+    case RecData:
+      if (!mLoop && (size_t)mDataPosition >= mDataSize) {
+        return false;
+      }
+      break;
+
+    case NoiseData:
+      break;
   }
 
   return true;
@@ -81,11 +124,26 @@ BBuffer::output(double *aOutput)
     return;
   }
 
-  if (mLoop) {
-    outputLoop(aOutput);
-  } else {
-    outputNoLoop(aOutput);
+  switch (mType) {
+    case NoData:
+      break;
+
+    case RecData:
+      if (mLoop) {
+        outputLoop(aOutput);
+      } else {
+        outputNoLoop(aOutput);
+      }
+
+      break;
+
+    case NoiseData:
+      for (int j=0; j < maxiSettings::channels; ++j) {
+        aOutput[j] = (double)qrand() / (double)RAND_MAX;
+      }
+      break;
   }
+
 
   mEngine.output(aOutput);
 }
