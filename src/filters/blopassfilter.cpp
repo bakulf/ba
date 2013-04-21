@@ -80,7 +80,8 @@ BLopassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BLopassFilter, cutOffFunction, mCutOff, "Lopass", "cutOff")
+METHOD_FUNCTION(BLopassFilter, BEngineFilterShell, cutOffFunction,
+                mCutOff, "Lopass", "cutOff")
 
 QString
 BLopassFilter::writeFilter()

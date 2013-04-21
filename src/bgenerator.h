@@ -38,6 +38,9 @@ protected:
   static QScriptValue funcGeneratorName(QScriptContext* aContext,
                                         QScriptEngine* aEngine);
 
+  static QScriptValue funcGeneratorGet(QScriptContext* aContext,
+                                       QScriptEngine* aEngine);
+
 protected:
   QScriptValue mObjGenerator;
   QString mName;

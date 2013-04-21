@@ -80,7 +80,8 @@ BHipassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BHipassFilter, cutOffFunction, mCutOff, "Hipass", "cutOff")
+METHOD_FUNCTION(BHipassFilter, BEngineFilterShell, cutOffFunction,
+                mCutOff, "Hipass", "cutOff")
 
 QString
 BHipassFilter::writeFilter()

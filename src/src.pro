@@ -44,9 +44,15 @@ FILTERS_SOURCES = bchorusfilter.cpp \
                   bflangerfilter.cpp
 
 GENERATORS_HEADERS = bnoisegenerator.h \
+                     bsinewavegenerator.h \
+                     bcoswavegenerator.h \
+                     bphasorgenerator.h \
                      bnumbergenerator.h
 
 GENERATORS_SOURCES = bnoisegenerator.cpp \
+                     bsinewavegenerator.cpp \
+                     bcoswavegenerator.cpp \
+                     bphasorgenerator.cpp \
                      bnumbergenerator.cpp
 
 HEADERS = bapplication.h \

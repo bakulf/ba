@@ -91,8 +91,10 @@ BLoresFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BLoresFilter, cutOffFunction, mCutOff, "Lores", "cutOff")
-METHOD_FUNCTION(BLoresFilter, resonanceFunction, mResonance, "Lores", "resonance")
+METHOD_FUNCTION(BLoresFilter, BEngineFilterShell, cutOffFunction,
+                mCutOff, "Lores", "cutOff")
+METHOD_FUNCTION(BLoresFilter, BEngineFilterShell, resonanceFunction,
+                mResonance, "Lores", "resonance")
 
 QString
 BLoresFilter::writeFilter()

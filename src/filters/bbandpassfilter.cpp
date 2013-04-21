@@ -92,8 +92,10 @@ BBandpassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BBandpassFilter, cutOffFunction, mCutOff, "Bandpass", "cutOff");
-METHOD_FUNCTION(BBandpassFilter, resonanceFunction, mResonance, "Bandpass", "resonance");
+METHOD_FUNCTION(BBandpassFilter, BEngineFilterShell, cutOffFunction,
+                mCutOff, "Bandpass", "cutOff")
+METHOD_FUNCTION(BBandpassFilter, BEngineFilterShell, resonanceFunction,
+                mResonance, "Bandpass", "resonance")
 
 QString
 BBandpassFilter::writeFilter()

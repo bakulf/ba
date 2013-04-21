@@ -103,7 +103,8 @@ BDistortionFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BDistortionFilter, shapeFunction, mShape, "Distortion", "shape");
+METHOD_FUNCTION(BDistortionFilter, BEngineFilterShell, shapeFunction,
+                mShape, "Distortion", "shape");
 
 QString
 BDistortionFilter::writeFilter()

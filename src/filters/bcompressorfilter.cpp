@@ -146,10 +146,14 @@ BCompressorFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BCompressorFilter, ratioFunction, mRatio, "Bandpass", "ratio");
-METHOD_FUNCTION(BCompressorFilter, thresholdFunction, mThreshold, "Bandpass", "threshold");
-METHOD_FUNCTION(BCompressorFilter, attachFunction, mAttach, "Bandpass", "attach");
-METHOD_FUNCTION(BCompressorFilter, releaseFunction, mRelease, "Bandpass", "release");
+METHOD_FUNCTION(BCompressorFilter, BEngineFilterShell, ratioFunction,
+                mRatio, "Bandpass", "ratio")
+METHOD_FUNCTION(BCompressorFilter, BEngineFilterShell, thresholdFunction,
+                mThreshold, "Bandpass", "threshold")
+METHOD_FUNCTION(BCompressorFilter, BEngineFilterShell, attachFunction,
+                mAttach, "Bandpass", "attach")
+METHOD_FUNCTION(BCompressorFilter, BEngineFilterShell, releaseFunction,
+                mRelease, "Bandpass", "release")
 
 QString
 BCompressorFilter::writeFilter()

@@ -115,9 +115,12 @@ BDelaylineFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BDelaylineFilter, sizeFunction, mSize, "Delayline", "size");
-METHOD_FUNCTION(BDelaylineFilter, feedbackFunction, mFeedback, "Delayline", "feedback");
-METHOD_FUNCTION(BDelaylineFilter, positionFunction, mPosition, "Delayline", "position");
+METHOD_FUNCTION(BDelaylineFilter, BEngineFilterShell, sizeFunction,
+                mSize, "Delayline", "size")
+METHOD_FUNCTION(BDelaylineFilter, BEngineFilterShell, feedbackFunction,
+                mFeedback, "Delayline", "feedback")
+METHOD_FUNCTION(BDelaylineFilter, BEngineFilterShell, positionFunction,
+                mPosition, "Delayline", "position")
 
 QString
 BDelaylineFilter::writeFilter()

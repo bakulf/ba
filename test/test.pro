@@ -8,18 +8,21 @@ TESTS = \
   005_rec.config \
   006_filters.config \
   007_noise.config \
-  008_bandpassfilter.config \
-  009_chorusfilter.config \
-  010_compressorfilter.config \
-  011_delaylinefilter.config \
-  012_atandistortionfilter.config \
-  013_fastatandistortionfilter.config \
-  014_flangerfilter.config \
-  015_gatefilter.config \
-  016_hipassfilter.config \
-  017_hiresfilter.config \
-  018_lopassfilter.config \
-  019_loresfilter.config
+  100_bandpassfilter.config \
+  101_chorusfilter.config \
+  102_compressorfilter.config \
+  103_delaylinefilter.config \
+  104_atondistortionfilter.config \
+  105_fastatandistortionfilter.config \
+  106_flangerfilter.config \
+  107_gatefilter.config \
+  108_hipassfilter.config \
+  109_hiresfilter.config \
+  110_lopassfilter.config \
+  111_loresfilter.config \
+  200_sinewavegenerator.config \
+  201_coswavegenerator.config \
+  202_phasorgenerator.config
 
 for(test, TESTS) {
   system("./unittest.sh $$test")

@@ -147,10 +147,14 @@ BGateFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BGateFilter, thresholdFunction, mThreshold, "Gate", "threshold")
-METHOD_FUNCTION(BGateFilter, holdtimeFunction, mHoldtime, "Gate", "holdtime")
-METHOD_FUNCTION(BGateFilter, attachFunction, mAttach, "Gate", "attach")
-METHOD_FUNCTION(BGateFilter, releaseFunction, mRelease, "Gate", "release")
+METHOD_FUNCTION(BGateFilter, BEngineFilterShell, thresholdFunction,
+                mThreshold, "Gate", "threshold")
+METHOD_FUNCTION(BGateFilter, BEngineFilterShell, holdtimeFunction,
+                mHoldtime, "Gate", "holdtime")
+METHOD_FUNCTION(BGateFilter, BEngineFilterShell, attachFunction,
+                mAttach, "Gate", "attach")
+METHOD_FUNCTION(BGateFilter, BEngineFilterShell, releaseFunction,
+                mRelease, "Gate", "release")
 
 QString
 BGateFilter::writeFilter()

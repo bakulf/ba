@@ -125,12 +125,11 @@ private:
   BEngineFilterRef mObj;
 };
 
-#define METHOD_FUNCTION( _class , _method , _prop , _cname, _mname )          \
+#define METHOD_FUNCTION( _class , _shell , _method , _prop , _cname, _mname ) \
 QScriptValue                                                                  \
 _class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
 {                                                                             \
-  BEngineFilterShell* shell =                                                 \
-    static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());     \
+  _shell* shell = static_cast<_shell*>(aContext->thisObject().toQObject());   \
   _class* filter = static_cast<_class*>(shell->get());                        \
                                                                               \
   if (aContext->argumentCount()) {                                            \
@@ -144,7 +143,8 @@ _class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
   }                                                                           \
                                                                               \
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);               \
-  return QScriptValue(filter->_prop->objGenerator(engine));                   \
+  return QScriptValue(filter->_prop ? filter->_prop->objGenerator(engine)     \
+                                    : QScriptValue::UndefinedValue);          \
 }
 
 #endif

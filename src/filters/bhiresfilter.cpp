@@ -90,8 +90,10 @@ BHiresFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BHiresFilter, cutOffFunction, mCutOff, "Hires", "cutOff")
-METHOD_FUNCTION(BHiresFilter, resonanceFunction, mResonance, "Hires", "resonance")
+METHOD_FUNCTION(BHiresFilter, BEngineFilterShell, cutOffFunction,
+                mCutOff, "Hires", "cutOff")
+METHOD_FUNCTION(BHiresFilter, BEngineFilterShell, resonanceFunction,
+                mResonance, "Hires", "resonance")
 
 QString
 BHiresFilter::writeFilter()

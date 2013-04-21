@@ -170,8 +170,6 @@ BAudio::audioRouting(void* outputBuffer, void* inputBuffer,
 
   BMUTEXLOCKER
 
-  audio->mApp->updateGenerators();
-
   if (audio->mRecording) {
     int total = nBufferFrames * maxiSettings::channels;
 
@@ -194,6 +192,9 @@ BAudio::audioRouting(void* outputBuffer, void* inputBuffer,
 
   // Write interleaved audio data.
   for (unsigned int i=0; i < nBufferFrames; ++i) {
+
+    audio->mApp->updateGenerators();
+
     double values[maxiSettings::channels];
     audio->play(values);
 

@@ -109,10 +109,14 @@ BChorusFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BChorusFilter, delayFunction, mDelay, "Chorus", "delay")
-METHOD_FUNCTION(BChorusFilter, feedbackFunction, mFeedback, "Chorus", "feedback")
-METHOD_FUNCTION(BChorusFilter, speedFunction, mSpeed, "Chorus", "speed")
-METHOD_FUNCTION(BChorusFilter, depthFunction, mDepth, "Chorus", "depth")
+METHOD_FUNCTION(BChorusFilter, BEngineFilterShell, delayFunction,
+                mDelay, "Chorus", "delay")
+METHOD_FUNCTION(BChorusFilter, BEngineFilterShell, feedbackFunction,
+                mFeedback, "Chorus", "feedback")
+METHOD_FUNCTION(BChorusFilter, BEngineFilterShell, speedFunction,
+                mSpeed, "Chorus", "speed")
+METHOD_FUNCTION(BChorusFilter, BEngineFilterShell, depthFunction,
+                mDepth, "Chorus", "depth")
 
 QString
 BChorusFilter::writeFilter()

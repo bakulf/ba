@@ -109,10 +109,14 @@ BFlangerFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BFlangerFilter, delayFunction, mDelay, "Flanger", "delay")
-METHOD_FUNCTION(BFlangerFilter, feedbackFunction, mFeedback, "Flanger", "feedback")
-METHOD_FUNCTION(BFlangerFilter, speedFunction, mSpeed, "Flanger", "speed")
-METHOD_FUNCTION(BFlangerFilter, depthFunction, mDepth, "Flanger", "depth")
+METHOD_FUNCTION(BFlangerFilter, BEngineFilterShell, delayFunction,
+                mDelay, "Flanger", "delay")
+METHOD_FUNCTION(BFlangerFilter, BEngineFilterShell, feedbackFunction,
+                mFeedback, "Flanger", "feedback")
+METHOD_FUNCTION(BFlangerFilter, BEngineFilterShell, speedFunction,
+                mSpeed, "Flanger", "speed")
+METHOD_FUNCTION(BFlangerFilter, BEngineFilterShell, depthFunction,
+                mDepth, "Flanger", "depth")
 
 QString
 BFlangerFilter::writeFilter()
