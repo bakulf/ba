@@ -214,10 +214,10 @@ BEngine::filterFactory(QScriptEngine* aEngine)
   aEngine->globalObject().setProperty("Bandpass",
     aEngine->newFunction(BBandpassFilter::engineFunction, bandpassProto));
 
-  // HipasHis
+  // Hipass
   QScriptValue hipassProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Hipass",
-    aEngine->newFunction(BLopassFilter::engineFunction, hipassProto));
+    aEngine->newFunction(BHipassFilter::engineFunction, hipassProto));
 
   // Lopass
   QScriptValue lopassProto = aEngine->newObject();

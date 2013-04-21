@@ -129,7 +129,9 @@ private:
 QScriptValue                                                                  \
 _class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
 {                                                                             \
-  _class* filter = static_cast<_class*>(aContext->thisObject().toQObject());  \
+  BEngineFilterShell* shell =                                                 \
+    static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());     \
+  _class* filter = static_cast<_class*>(shell->get());                        \
                                                                               \
   if (aContext->argumentCount()) {                                            \
     BGeneratorRef x = BGenerator::numberToGenerator(aContext->argument(0));   \
