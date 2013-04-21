@@ -91,6 +91,7 @@ private:
   BScriptEngine* mScriptEngine;
 
   QList<BGeneratorRef> mGenerators;
+  quint64 mGeneratorToken;
 };
 
 #endif

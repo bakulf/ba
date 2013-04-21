@@ -22,7 +22,15 @@ TESTS = \
   111_loresfilter.config \
   200_sinewavegenerator.config \
   201_coswavegenerator.config \
-  202_phasorgenerator.config
+  202_phasorgenerator.config \
+  203_sawgenerator.config \
+  204_trianglegenerator.config \
+  205_squaregenerator.config \
+  206_pulsegenerator.config \
+  207_sinebufgenerator.config \
+  208_sinebuf4generator.config \
+  209_sawngenerator.config \
+  210_rectgenerator.config
 
 for(test, TESTS) {
   system("./unittest.sh $$test")

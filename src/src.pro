@@ -47,12 +47,28 @@ GENERATORS_HEADERS = bnoisegenerator.h \
                      bsinewavegenerator.h \
                      bcoswavegenerator.h \
                      bphasorgenerator.h \
+                     bsawgenerator.h \
+                     btrianglegenerator.h \
+                     bsquaregenerator.h \
+                     bpulsegenerator.h \
+                     bsinebufgenerator.h \
+                     bsinebuf4generator.h \
+                     bsawngenerator.h \
+                     brectgenerator.h \
                      bnumbergenerator.h
 
 GENERATORS_SOURCES = bnoisegenerator.cpp \
                      bsinewavegenerator.cpp \
                      bcoswavegenerator.cpp \
                      bphasorgenerator.cpp \
+                     bsawgenerator.cpp \
+                     btrianglegenerator.cpp \
+                     bsquaregenerator.cpp \
+                     bpulsegenerator.cpp \
+                     bsinebufgenerator.cpp \
+                     bsinebuf4generator.cpp \
+                     bsawngenerator.cpp \
+                     brectgenerator.cpp \
                      bnumbergenerator.cpp
 
 HEADERS = bapplication.h \

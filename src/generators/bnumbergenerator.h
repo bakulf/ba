@@ -15,11 +15,13 @@ public:
   BNumberGenerator(double aNumber);
   virtual ~BNumberGenerator();
 
-  virtual void generate() {}
   virtual double get() { return mNumber; }
 
   static QScriptValue engineFunction(QScriptContext* aContext,
                                      QScriptEngine* aEngine);
+
+protected:
+  virtual void generateInternal(quint64) {}
 
 private:
   virtual void makeObjGenerator(BScriptEngine* aEngine);

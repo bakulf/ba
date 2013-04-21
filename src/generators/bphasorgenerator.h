@@ -18,13 +18,14 @@ public:
                    BGenerator* aEndphase);
   virtual ~BPhasorGenerator();
 
-  virtual void generate();
   virtual double get();
 
   static QScriptValue engineFunction(QScriptContext* aContext,
                                      QScriptEngine* aEngine);
 
 protected:
+  virtual void generateInternal(quint64 aToken);
+
   virtual void engineProperties(QScriptEngine* aEngine,
                                 QScriptValue aValue);
 

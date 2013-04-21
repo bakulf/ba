@@ -17,7 +17,7 @@ public:
   BCoswaveGenerator(BGenerator* aFrequency);
   virtual ~BCoswaveGenerator();
 
-  virtual void generate();
+  virtual void generateInternal(quint64 aToken);
   virtual double get();
 
   static QScriptValue engineFunction(QScriptContext* aContext,

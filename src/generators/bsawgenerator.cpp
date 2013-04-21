@@ -1,48 +1,48 @@
-#include "bcoswavegenerator.h"
+#include "bsawgenerator.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-BCoswaveGenerator::BCoswaveGenerator(BGenerator* aFrequency)
-: BGenerator("coswave")
+BSawGenerator::BSawGenerator(BGenerator* aFrequency)
+: BGenerator("saw")
 , mFrequency(aFrequency)
 {
 }
 
-BCoswaveGenerator::~BCoswaveGenerator()
+BSawGenerator::~BSawGenerator()
 {
 }
 
 void
-BCoswaveGenerator::generateInternal(quint64 aToken)
+BSawGenerator::generateInternal(quint64 aToken)
 {
   mFrequency->generate(aToken);
-  mValue = mMaxi.coswave(mFrequency->get());
+  mValue = mMaxi.saw(mFrequency->get());
 }
 
 double
-BCoswaveGenerator::get()
+BSawGenerator::get()
 {
   return mValue;
 }
 
 QScriptValue
-BCoswaveGenerator::engineFunction(QScriptContext* aContext,
-                                 QScriptEngine* aEngine)
+BSawGenerator::engineFunction(QScriptContext* aContext,
+                              QScriptEngine* aEngine)
 {
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
 
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Saw(frequency) used wrongly.");
   }
 
   BGeneratorRef frequency = BGenerator::numberToGenerator(aContext->argument(0));
   if (!frequency) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Saw(frequency) used wrongly.");
   }
 
-  BCoswaveGenerator* generator = new BCoswaveGenerator(frequency);
+  BSawGenerator* generator = new BSawGenerator(frequency);
   engine->app()->registerGenerator(generator);
 
   QScriptValue object = generator->objGenerator(engine);
@@ -57,12 +57,12 @@ BCoswaveGenerator::engineFunction(QScriptContext* aContext,
 }
 
 void
-BCoswaveGenerator::engineProperties(QScriptEngine* aEngine,
-                                    QScriptValue aValue)
+BSawGenerator::engineProperties(QScriptEngine* aEngine,
+                                QScriptValue aValue)
 {
   aValue.setProperty("frequency", aEngine->newFunction(frequencyFunction),
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BCoswaveGenerator, BGeneratorShell, frequencyFunction,
-                mFrequency, "Coswave", "frequency")
+METHOD_FUNCTION(BSawGenerator, BGeneratorShell, frequencyFunction,
+                mFrequency, "Saw", "frequency")

@@ -1,48 +1,48 @@
-#include "bcoswavegenerator.h"
+#include "bsquaregenerator.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-BCoswaveGenerator::BCoswaveGenerator(BGenerator* aFrequency)
-: BGenerator("coswave")
+BSquareGenerator::BSquareGenerator(BGenerator* aFrequency)
+: BGenerator("square")
 , mFrequency(aFrequency)
 {
 }
 
-BCoswaveGenerator::~BCoswaveGenerator()
+BSquareGenerator::~BSquareGenerator()
 {
 }
 
 void
-BCoswaveGenerator::generateInternal(quint64 aToken)
+BSquareGenerator::generateInternal(quint64 aToken)
 {
   mFrequency->generate(aToken);
-  mValue = mMaxi.coswave(mFrequency->get());
+  mValue = mMaxi.square(mFrequency->get());
 }
 
 double
-BCoswaveGenerator::get()
+BSquareGenerator::get()
 {
   return mValue;
 }
 
 QScriptValue
-BCoswaveGenerator::engineFunction(QScriptContext* aContext,
+BSquareGenerator::engineFunction(QScriptContext* aContext,
                                  QScriptEngine* aEngine)
 {
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
 
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Square(frequency) used wrongly.");
   }
 
   BGeneratorRef frequency = BGenerator::numberToGenerator(aContext->argument(0));
   if (!frequency) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Square(frequency) used wrongly.");
   }
 
-  BCoswaveGenerator* generator = new BCoswaveGenerator(frequency);
+  BSquareGenerator* generator = new BSquareGenerator(frequency);
   engine->app()->registerGenerator(generator);
 
   QScriptValue object = generator->objGenerator(engine);
@@ -57,12 +57,12 @@ BCoswaveGenerator::engineFunction(QScriptContext* aContext,
 }
 
 void
-BCoswaveGenerator::engineProperties(QScriptEngine* aEngine,
-                                    QScriptValue aValue)
+BSquareGenerator::engineProperties(QScriptEngine* aEngine,
+                                   QScriptValue aValue)
 {
   aValue.setProperty("frequency", aEngine->newFunction(frequencyFunction),
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BCoswaveGenerator, BGeneratorShell, frequencyFunction,
-                mFrequency, "Coswave", "frequency")
+METHOD_FUNCTION(BSquareGenerator, BGeneratorShell, frequencyFunction,
+                mFrequency, "Square", "frequency")

@@ -21,6 +21,7 @@ BApplication::BApplication(int argc, char** argv)
 : QCoreApplication(argc, argv)
 , mTerminalInitialized(false)
 , mEscapeLoop(0)
+, mGeneratorToken(0)
 {
   QStringList args = arguments();
   if (args.length() > 1) {
@@ -404,7 +405,9 @@ BApplication::registerGenerator(BGenerator* aGenerator)
 void
 BApplication::updateGenerators()
 {
+  ++mGeneratorToken;
+
   foreach (const BGeneratorRef& generator, mGenerators) {
-    generator->generate();
+    generator->generate(mGeneratorToken);
   }
 }

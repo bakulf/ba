@@ -16,7 +16,7 @@ BNoiseGenerator::~BNoiseGenerator()
 }
 
 void
-BNoiseGenerator::generate()
+BNoiseGenerator::generateInternal(quint64)
 {
   if (!gInitialized) {
     gInitialized = true;

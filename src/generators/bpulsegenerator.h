@@ -1,5 +1,5 @@
-#ifndef _BA_SINEWAVE_GENERATOR_H_
-#define _BA_SINEWAVE_GENERATOR_H_
+#ifndef _BA_PULSE_GENERATOR_H_
+#define _BA_PULSE_GENERATOR_H_
 
 #include "bgenerator.h"
 
@@ -9,34 +9,36 @@
 
 class QScriptContext;
 
-class BSinewaveGenerator : public BGenerator
+class BPulseGenerator : public BGenerator
 {
   Q_OBJECT
 
 public:
-  BSinewaveGenerator(BGenerator* aFrequency);
-  virtual ~BSinewaveGenerator();
+  BPulseGenerator(BGenerator* aFrequency, BGenerator* aDuty);
+  virtual ~BPulseGenerator();
 
+  virtual void generateInternal(quint64 aToken);
   virtual double get();
 
   static QScriptValue engineFunction(QScriptContext* aContext,
                                      QScriptEngine* aEngine);
 
 protected:
-  virtual void generateInternal(quint64 aToken);
-
   virtual void engineProperties(QScriptEngine* aEngine,
                                 QScriptValue aValue);
 
   static QScriptValue frequencyFunction(QScriptContext* aContext,
                                         QScriptEngine* aEngine);
 
+  static QScriptValue dutyFunction(QScriptContext* aContext,
+                                   QScriptEngine* aEngine);
 
 private:
   maxiOsc mMaxi;
 
   double mValue;
   BGeneratorRef mFrequency;
+  BGeneratorRef mDuty;
 };
 
 #endif

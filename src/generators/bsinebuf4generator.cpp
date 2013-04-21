@@ -1,48 +1,48 @@
-#include "bcoswavegenerator.h"
+#include "bsinebuf4generator.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-BCoswaveGenerator::BCoswaveGenerator(BGenerator* aFrequency)
-: BGenerator("coswave")
+BSinebuf4Generator::BSinebuf4Generator(BGenerator* aFrequency)
+: BGenerator("sinebuf4")
 , mFrequency(aFrequency)
 {
 }
 
-BCoswaveGenerator::~BCoswaveGenerator()
+BSinebuf4Generator::~BSinebuf4Generator()
 {
 }
 
 void
-BCoswaveGenerator::generateInternal(quint64 aToken)
+BSinebuf4Generator::generateInternal(quint64 aToken)
 {
   mFrequency->generate(aToken);
-  mValue = mMaxi.coswave(mFrequency->get());
+  mValue = mMaxi.sinebuf4(mFrequency->get());
 }
 
 double
-BCoswaveGenerator::get()
+BSinebuf4Generator::get()
 {
   return mValue;
 }
 
 QScriptValue
-BCoswaveGenerator::engineFunction(QScriptContext* aContext,
-                                 QScriptEngine* aEngine)
+BSinebuf4Generator::engineFunction(QScriptContext* aContext,
+                                   QScriptEngine* aEngine)
 {
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
 
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Sinebuf4(frequency) used wrongly.");
   }
 
   BGeneratorRef frequency = BGenerator::numberToGenerator(aContext->argument(0));
   if (!frequency) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Sinebuf4(frequency) used wrongly.");
   }
 
-  BCoswaveGenerator* generator = new BCoswaveGenerator(frequency);
+  BSinebuf4Generator* generator = new BSinebuf4Generator(frequency);
   engine->app()->registerGenerator(generator);
 
   QScriptValue object = generator->objGenerator(engine);
@@ -57,12 +57,12 @@ BCoswaveGenerator::engineFunction(QScriptContext* aContext,
 }
 
 void
-BCoswaveGenerator::engineProperties(QScriptEngine* aEngine,
-                                    QScriptValue aValue)
+BSinebuf4Generator::engineProperties(QScriptEngine* aEngine,
+                                     QScriptValue aValue)
 {
   aValue.setProperty("frequency", aEngine->newFunction(frequencyFunction),
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BCoswaveGenerator, BGeneratorShell, frequencyFunction,
-                mFrequency, "Coswave", "frequency")
+METHOD_FUNCTION(BSinebuf4Generator, BGeneratorShell, frequencyFunction,
+                mFrequency, "Sinebuf4", "frequency")

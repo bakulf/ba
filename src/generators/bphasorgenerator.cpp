@@ -17,11 +17,16 @@ BPhasorGenerator::~BPhasorGenerator()
 }
 
 void
-BPhasorGenerator::generate()
+BPhasorGenerator::generateInternal(quint64 aToken)
 {
+  mFrequency->generate(aToken);
+
   if (!mStartphase || !mEndphase) {
     mValue = mMaxi.phasor(mFrequency->get());
   } else {
+    mStartphase->generate(aToken);
+    mEndphase->generate(aToken);
+
     mValue = mMaxi.phasor(mFrequency->get(), mStartphase->get(), mEndphase->get());
   }
 }

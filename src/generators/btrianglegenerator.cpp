@@ -1,48 +1,48 @@
-#include "bcoswavegenerator.h"
+#include "btrianglegenerator.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-BCoswaveGenerator::BCoswaveGenerator(BGenerator* aFrequency)
-: BGenerator("coswave")
+BTriangleGenerator::BTriangleGenerator(BGenerator* aFrequency)
+: BGenerator("triangle")
 , mFrequency(aFrequency)
 {
 }
 
-BCoswaveGenerator::~BCoswaveGenerator()
+BTriangleGenerator::~BTriangleGenerator()
 {
 }
 
 void
-BCoswaveGenerator::generateInternal(quint64 aToken)
+BTriangleGenerator::generateInternal(quint64 aToken)
 {
   mFrequency->generate(aToken);
-  mValue = mMaxi.coswave(mFrequency->get());
+  mValue = mMaxi.triangle(mFrequency->get());
 }
 
 double
-BCoswaveGenerator::get()
+BTriangleGenerator::get()
 {
   return mValue;
 }
 
 QScriptValue
-BCoswaveGenerator::engineFunction(QScriptContext* aContext,
-                                 QScriptEngine* aEngine)
+BTriangleGenerator::engineFunction(QScriptContext* aContext,
+                                   QScriptEngine* aEngine)
 {
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
 
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Triangle(frequency) used wrongly.");
   }
 
   BGeneratorRef frequency = BGenerator::numberToGenerator(aContext->argument(0));
   if (!frequency) {
     return aContext->throwError(QScriptContext::SyntaxError,
-                                "Coswave(frequency) used wrongly.");
+                                "Triangle(frequency) used wrongly.");
   }
 
-  BCoswaveGenerator* generator = new BCoswaveGenerator(frequency);
+  BTriangleGenerator* generator = new BTriangleGenerator(frequency);
   engine->app()->registerGenerator(generator);
 
   QScriptValue object = generator->objGenerator(engine);
@@ -57,12 +57,12 @@ BCoswaveGenerator::engineFunction(QScriptContext* aContext,
 }
 
 void
-BCoswaveGenerator::engineProperties(QScriptEngine* aEngine,
-                                    QScriptValue aValue)
+BTriangleGenerator::engineProperties(QScriptEngine* aEngine,
+                                     QScriptValue aValue)
 {
   aValue.setProperty("frequency", aEngine->newFunction(frequencyFunction),
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-METHOD_FUNCTION(BCoswaveGenerator, BGeneratorShell, frequencyFunction,
-                mFrequency, "Coswave", "frequency")
+METHOD_FUNCTION(BTriangleGenerator, BGeneratorShell, frequencyFunction,
+                mFrequency, "Triangle", "frequency")

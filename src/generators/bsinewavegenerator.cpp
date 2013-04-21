@@ -13,8 +13,9 @@ BSinewaveGenerator::~BSinewaveGenerator()
 }
 
 void
-BSinewaveGenerator::generate()
+BSinewaveGenerator::generateInternal(quint64 aToken)
 {
+  mFrequency->generate(aToken);
   mValue = mMaxi.sinewave(mFrequency->get());
 }
 

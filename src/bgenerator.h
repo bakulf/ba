@@ -21,7 +21,7 @@ public:
 
   QScriptValue objGenerator(BScriptEngine* aEngine);
 
-  virtual void generate() = 0;
+  void generate(quint64 aToken);
   virtual double get() = 0;
 
   static void generatorFactory(QScriptEngine* aEngine);
@@ -29,6 +29,7 @@ public:
   static BGenerator* numberToGenerator(QScriptValue aValue);
 
 protected:
+  virtual void generateInternal(quint64 aToken) = 0;
 
   virtual void engineProperties(QScriptEngine*,
                                 QScriptValue) {}
@@ -44,6 +45,7 @@ protected:
 protected:
   QScriptValue mObjGenerator;
   QString mName;
+  quint64 mToken;
 };
 
 typedef BRef<BGenerator> BGeneratorRef;
