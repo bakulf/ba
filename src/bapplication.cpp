@@ -271,6 +271,10 @@ BApplication::readConfigAudio(QDomElement& aElement)
       maxiSettings::bufferSize = e.text().toInt();
     }
 
+    if (e.tagName() == "device") {
+      mAudioDevice = e.text();
+    }
+
     if (e.tagName() == "buffers") {
       int buffers = e.text().toInt();
       for (int i = 0; i < buffers; ++i) {

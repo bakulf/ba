@@ -34,6 +34,7 @@ public:
 
   BEventManager& eventManager() { return mEventManager; }
   BAudio& audio() { return mAudio; }
+  QString& audioDevice() { return mAudioDevice; }
 
   BBuffer* currentBuffer() const { return mCurrentBuffer; }
   QList<BBuffer*>& buffers() { return mBuffers; }
@@ -78,6 +79,8 @@ private:
 
   bool mEscapeSequence;
   int mEscapeLoop;
+
+  QString mAudioDevice;
 
   BAudio mAudio;
 

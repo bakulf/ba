@@ -52,7 +52,32 @@ BAudio::init(BApplication* aApp)
   }
 
   RtAudio::StreamParameters params;
-  params.deviceId = mRta->getDefaultOutputDevice();
+
+  if (aApp->audioDevice().isEmpty()) {
+    params.deviceId = mRta->getDefaultOutputDevice();
+  } else {
+    bool found = false;
+    for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
+      if (aApp->audioDevice().toStdString() == mRta->getDeviceInfo(i).name) {
+        found = true;
+        params.deviceId = i;
+        break;
+      }
+    }
+
+    if (!found) {
+      std::cout << "No audio device found with name: `"
+                << qPrintable(aApp->audioDevice()) << "'" << std::endl;
+      std::cout << "The list of available devices is:" << std::endl;
+
+      for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
+        std::cout << mRta->getDeviceInfo(i).name << std::endl;
+      }
+
+      return false;
+    }
+  }
+
   params.nChannels = maxiSettings::channels;
   params.firstChannel = 0;
   unsigned int bufferFrames = maxiSettings::bufferSize;
