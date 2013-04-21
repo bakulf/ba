@@ -11,10 +11,10 @@ class BCompressorFilter : public BEngineFilter
 
 public:
   BCompressorFilter(QObject* aParent,
-                    double aRatio,
-                    double aThreshold,
-                    double aAttach,
-                    double aRelease);
+                    BGenerator* aRatio,
+                    BGenerator* aThreshold,
+                    BGenerator* aAttach,
+                    BGenerator* aRelease);
   virtual ~BCompressorFilter();
 
   virtual QString writeFilter();
@@ -49,10 +49,10 @@ private:
                                       QScriptEngine* aEngine);
 
 private:
-  double mRatio;
-  double mThreshold;
-  double mAttach;
-  double mRelease;
+  BGeneratorRef mRatio;
+  BGeneratorRef mThreshold;
+  BGeneratorRef mAttach;
+  BGeneratorRef mRelease;
 
   maxiDyn mMaxi;
 };

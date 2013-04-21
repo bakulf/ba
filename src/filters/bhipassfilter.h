@@ -2,6 +2,7 @@
 #define _BA_HIPASSFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BHipassFilter : public BEngineFilter
@@ -11,7 +12,7 @@ class BHipassFilter : public BEngineFilter
 
 public:
   BHipassFilter(QObject* aParent,
-                double aCutOff);
+                BGenerator* aCutOff);
   virtual ~BHipassFilter();
 
   virtual QString writeFilter();
@@ -37,7 +38,7 @@ private:
                                      QScriptEngine* aEngine);
 
 private:
-  double mCutOff;
+  BGeneratorRef mCutOff;
 
   maxiFilter mMaxi;
 };

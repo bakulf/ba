@@ -2,6 +2,7 @@
 #define _BA_BANDPASSFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BBandpassFilter : public BEngineFilter
@@ -11,8 +12,8 @@ class BBandpassFilter : public BEngineFilter
 
 public:
   BBandpassFilter(QObject* aParent,
-                  double aCutOff,
-                  double aResonance);
+                  BGenerator* aCutOff,
+                  BGenerator* aResonance);
   virtual ~BBandpassFilter();
 
   virtual QString writeFilter();
@@ -41,8 +42,8 @@ private:
                                         QScriptEngine* aEngine);
 
 private:
-  double mCutOff;
-  double mResonance;
+  BGeneratorRef mCutOff;
+  BGeneratorRef mResonance;
 
   maxiFilter mMaxi;
 };

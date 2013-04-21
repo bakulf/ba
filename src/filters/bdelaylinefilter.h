@@ -11,9 +11,9 @@ class BDelaylineFilter : public BEngineFilter
 
 public:
   BDelaylineFilter(QObject* aParent,
-                   int aSize,
-                   double aFeedback,
-                   int aPosition);
+                   BGenerator* aSize,
+                   BGenerator* aFeedback,
+                   BGenerator* aPosition);
   virtual ~BDelaylineFilter();
 
   virtual QString writeFilter();
@@ -45,9 +45,9 @@ private:
                                        QScriptEngine* aEngine);
 
 private:
-  int mSize;
-  double mFeedback;
-  int mPosition;
+  BGeneratorRef mSize;
+  BGeneratorRef mFeedback;
+  BGeneratorRef mPosition;
 
   maxiDelayline mMaxi;
 };

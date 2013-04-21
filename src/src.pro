@@ -14,7 +14,9 @@ QMAKE_CXXFLAGS *= -Wall -ggdb
 
 DEFINES += BA_UNITTEST
 
-INCLUDEPATH += filters
+INCLUDEPATH += filters \
+               generators
+
 DEPENDPATH  += $${INCLUDEPATH}
 
 FILTERS_HEADERS = bchorusfilter.h \
@@ -41,6 +43,12 @@ FILTERS_SOURCES = bchorusfilter.cpp \
                   bdistortionfilter.cpp \
                   bflangerfilter.cpp
 
+GENERATORS_HEADERS = bnoisegenerator.h \
+                     bnumbergenerator.h
+
+GENERATORS_SOURCES = bnoisegenerator.cpp \
+                     bnumbergenerator.cpp
+
 HEADERS = bapplication.h \
           baudio.h \
           bbuffer.h \
@@ -49,8 +57,10 @@ HEADERS = bapplication.h \
           bengine.h \
           bmutexlocker.h \
           btimer.h \
+          bgenerator.h \
           maximilian.h \
-          $${FILTERS_HEADERS}
+          $${FILTERS_HEADERS} \
+          $${GENERATORS_HEADERS}
 
 SOURCES = main.cpp \
           bapplication.cpp \
@@ -61,5 +71,7 @@ SOURCES = main.cpp \
           bengine.cpp \
           bmutexlocker.cpp \
           btimer.cpp \
+          bgenerator.cpp \
           maximilian.cpp \
-          $${FILTERS_SOURCES}
+          $${FILTERS_SOURCES} \
+          $${GENERATORS_SOURCES}

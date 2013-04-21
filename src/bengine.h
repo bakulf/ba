@@ -1,10 +1,13 @@
 #ifndef _BA_ENGINE_H_
 #define _BA_ENGINE_H_
 
+#include "bgenerator.h"
+
 #include <QScriptEngine>
 
 class BEngineFilter;
 class BScriptEngine;
+class BNumberGenerator;
 
 class BEngine : public QObject
 {
@@ -15,11 +18,11 @@ public:
   BEngine();
   virtual ~BEngine();
 
-  double volume() const;
-  void setVolume(double aVolume);
+  BGenerator* volume();
+  void setVolume(BGenerator* aVolume);
 
-  double volume(int aChannel) const;
-  void setVolume(double aVolume, int aChannel);
+  BGenerator* volume(int aChannel) const;
+  void setVolume(BGenerator* aVolume, int aChannel);
 
   QList<BEngineFilter*>& filters() { return mFilters; }
 
@@ -46,7 +49,7 @@ public:
   static QStringList writeFilters(BEngine& aEngine);
 
 private:
-  double* mVolumes;
+  QList<BGeneratorRef> mVolumes;
 
   QList<BEngineFilter*> mFilters;
 
@@ -93,5 +96,25 @@ private:
 
   QScriptValue mObjFilter;
 };
+
+#define METHOD_FUNCTION( _class , _method , _prop , _cname, _mname )          \
+QScriptValue                                                                  \
+_class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
+{                                                                             \
+  _class* filter = static_cast<_class*>(aContext->thisObject().toQObject());  \
+                                                                              \
+  if (aContext->argumentCount()) {                                            \
+    BGeneratorRef x = BGenerator::numberToGenerator(aContext->argument(0));   \
+    if (!x) {                                                                 \
+      return aContext->throwError(QScriptContext::SyntaxError,                \
+                                  "#_cname.#_cname used wrongly.");           \
+    }                                                                         \
+                                                                              \
+    filter->_prop = x;                                                        \
+  }                                                                           \
+                                                                              \
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);               \
+  return QScriptValue(filter->_prop->objGenerator(engine));                   \
+}
 
 #endif

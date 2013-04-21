@@ -1,6 +1,7 @@
 #include "bscriptengine.h"
 #include "bapplication.h"
 #include "bmutexlocker.h"
+#include "bgenerator.h"
 #include "btimer.h"
 
 BScriptEngine::BScriptEngine(BApplication* aApp)
@@ -56,6 +57,9 @@ BScriptEngine::BScriptEngine(BApplication* aApp)
   // Any filter constructors
   BEngine::filterFactory(this);
 
+  // Any generator constructors
+  BGenerator::generatorFactory(this);
+
   // effects, volume & C
   makeEngine(this, globalObject());
 }
@@ -81,25 +85,12 @@ BScriptEngine::makeEngine(QScriptEngine* aEngine, QScriptValue aValue)
 
 QScriptValue
 BScriptEngine::funcDataType(QScriptContext* aContext,
-                            QScriptEngine*)
+                            QScriptEngine* aEngine)
 {
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
 
-  QString type;
-  switch (buffer->typeData()) {
-    case BBuffer::NoData:
-      break;
-
-    case BBuffer::RecData:
-      type.append("rec");
-      break;
-
-    case BBuffer::NoiseData:
-      type.append("noise");
-      break;
-  }
-
-  return QScriptValue(type);
+  return buffer->typeDataObject(engine);
 }
 
 QScriptValue
@@ -108,9 +99,16 @@ BScriptEngine::funcPlay(QScriptContext* aContext,
 {
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
 
-  if (aContext->argumentCount() > 0) {
-    QString type = aContext->argument(0).toString();
-    buffer->setTypeDataString(type);
+  if (aContext->argumentCount() == 0) {
+    buffer->setTypeData(BBuffer::RecData);
+  } else {
+    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
+    if (!generator) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "Wrong usage of play([generator]).");
+    }
+
+    buffer->setGeneratorData(generator);
   }
 
   buffer->play();
@@ -159,15 +157,22 @@ BScriptEngine::funcLoop(QScriptContext* aContext,
 
 QScriptValue
 BScriptEngine::funcSpeed(QScriptContext* aContext,
-                        QScriptEngine*)
+                        QScriptEngine* aEngine)
 {
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
 
-  if (aContext->argumentCount() && aContext->argument(0).isNumber()) {
-    buffer->setSpeed(aContext->argument(0).toNumber());
+  if (aContext->argumentCount()) {
+    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
+    if (!generator) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "buffer.speed = value - value must be a number or a generator");
+    }
+
+    buffer->setSpeed(generator);
   }
 
-  return QScriptValue(buffer->speed());
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
+  return QScriptValue(buffer->speed()->objGenerator(engine));
 }
 
 // GLOBAL FUNCTIONS -----------------------------------------------------------
@@ -227,13 +232,12 @@ QScriptValue
 BScriptEngine::funcSetTimeout(QScriptContext* aContext,
                               QScriptEngine* aEngine)
 {
-  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-
   if (aContext->argumentCount() < 2) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "setTimeout(function() { ... }, <timeout>) wrongly used.");
   }
 
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   return engine->mApp->timer()->setTimeout(aContext,
                                            aContext->argument(0),
                                            aContext->argument(1).toInt32());
@@ -243,13 +247,12 @@ QScriptValue
 BScriptEngine::funcClearTimeout(QScriptContext* aContext,
                                 QScriptEngine* aEngine)
 {
-  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "clearTimeout(<id>) wrongly used.");
   }
 
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   engine->mApp->timer()->clearTimeout(aContext->argument(0).toInt32());
   return QScriptValue();
 }
@@ -258,13 +261,12 @@ QScriptValue
 BScriptEngine::funcSetInterval(QScriptContext* aContext,
                                QScriptEngine* aEngine)
 {
-  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-
   if (aContext->argumentCount() < 2) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "setInterval(function() { ... }, <timeout>) wrongly used.");
   }
 
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   return engine->mApp->timer()->setInterval(aContext,
                                             aContext->argument(0),
                                             aContext->argument(1).toInt32());
@@ -274,13 +276,12 @@ QScriptValue
 BScriptEngine::funcClearInterval(QScriptContext* aContext,
                                  QScriptEngine* aEngine)
 {
-  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "clearInterval(<id>) wrongly used.");
   }
 
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   engine->mApp->timer()->clearInterval(aContext->argument(0).toInt32());
   return QScriptValue();
 }
@@ -426,11 +427,17 @@ BScriptEngine::funcVolume(QScriptContext* aContext,
                                 : engine->mApp->audio().engine();
 
   if (aContext->argumentCount()) {
-    qsreal volume = aContext->argument(0).toNumber();
-    audioEngine.setVolume(volume);
+    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
+    if (!generator) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "volume = value - value must be a number or a generator");
+    }
+
+    audioEngine.setVolume(generator);
   }
 
-  return QScriptValue(audioEngine.volume());
+  BGeneratorRef obj = audioEngine.volume();
+  return QScriptValue(obj->objGenerator(engine));
 }
 
 QScriptValue
@@ -478,10 +485,17 @@ BScriptEngine::funcChannelVolume(QScriptContext* aContext,
                                 : engine->mApp->audio().engine();
 
   if (aContext->argumentCount() > 0) {
-    audioEngine.setVolume(aContext->argument(0).toNumber(), id);
+    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
+    if (!generator) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "volume[id] = value - value must be a number or a generator");
+    }
+
+    audioEngine.setVolume(generator, id);
   }
 
-  return QScriptValue(audioEngine.volume(id));
+  BGeneratorRef obj = audioEngine.volume(id);
+  return QScriptValue(obj->objGenerator(engine));
 }
 
 QScriptValue

@@ -11,10 +11,10 @@ class BChorusFilter : public BEngineFilter
 
 public:
   BChorusFilter(QObject* aParent,
-                int aDelay,
-                double aFeedback,
-                double aSpeed,
-                double aDepth);
+                BGenerator* aDelay,
+                BGenerator* aFeedback,
+                BGenerator* aSpeed,
+                BGenerator* aDepth);
   virtual ~BChorusFilter();
 
   virtual QString writeFilter();
@@ -49,10 +49,10 @@ private:
                                     QScriptEngine* aEngine);
 
 private:
-  int mDelay;
-  double mFeedback;
-  double mSpeed;
-  double mDepth;
+  BGeneratorRef mDelay;
+  BGeneratorRef mFeedback;
+  BGeneratorRef mSpeed;
+  BGeneratorRef mDepth;
 
   maxiChorus mMaxi;
 };

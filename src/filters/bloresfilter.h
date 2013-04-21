@@ -2,6 +2,7 @@
 #define _BA_LORESFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BLoresFilter : public BEngineFilter
@@ -11,8 +12,8 @@ class BLoresFilter : public BEngineFilter
 
 public:
   BLoresFilter(QObject* aParent,
-                double aCutOff,
-                double aResonance);
+               BGenerator* aCutOff,
+               BGenerator* aResonance);
   virtual ~BLoresFilter();
 
   virtual QString writeFilter();
@@ -41,8 +42,8 @@ private:
                                         QScriptEngine* aEngine);
 
 private:
-  double mCutOff;
-  double mResonance;
+  BGeneratorRef mCutOff;
+  BGeneratorRef mResonance;
 
   maxiFilter mMaxi;
 };

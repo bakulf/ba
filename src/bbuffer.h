@@ -3,7 +3,9 @@
 
 #include "bengine.h"
 
+class BGenerator;
 class BApplication;
+class BScriptEngine;
 class QSettings;
 
 class BBuffer : public QObject
@@ -12,27 +14,26 @@ class BBuffer : public QObject
   Q_DISABLE_COPY(BBuffer)
 
 public:
-  BBuffer(QObject* aParent);
+  BBuffer(BApplication* aApp);
   virtual ~BBuffer();
 
   enum TypeData {
     NoData,
     RecData,
-    NoiseData
+    GeneratorData,
   };
 
   void setRecData(double* aData, size_t aSize);
-  void setNoiseData();
+  void setGeneratorData(BGenerator* aGenerator);
 
-  void setTypeDataString(QString& aType);
   void setTypeData(TypeData aType) { mType = aType; }
-  TypeData typeData() const { return mType; }
+  QScriptValue typeDataObject(BScriptEngine* aEngine) const;
 
   bool loop() const { return mLoop; }
   void setLoop(bool aLoop) { mLoop = aLoop; }
 
-  double speed() const { return mSpeed; }
-  void setSpeed(double aSpeed) { mSpeed = aSpeed; }
+  BGenerator* speed() const { return mSpeed; }
+  void setSpeed(BGenerator* aSpeed) { mSpeed = aSpeed; }
 
   QString info() const;
 
@@ -55,8 +56,9 @@ private:
   double* mData;
   size_t mDataSize;
   double mDataPosition;
+  BGeneratorRef mGenerator;
 
-  double mSpeed;
+  BGeneratorRef mSpeed;
 
   bool mLoop;
 

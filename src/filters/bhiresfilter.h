@@ -2,6 +2,7 @@
 #define _BA_HIRESFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BHiresFilter : public BEngineFilter
@@ -11,8 +12,8 @@ class BHiresFilter : public BEngineFilter
 
 public:
   BHiresFilter(QObject* aParent,
-                double aCutOff,
-                double aResonance);
+                BGenerator* aCutOff,
+                BGenerator* aResonance);
   virtual ~BHiresFilter();
 
   virtual QString writeFilter();
@@ -41,8 +42,8 @@ private:
                                         QScriptEngine* aEngine);
 
 private:
-  double mCutOff;
-  double mResonance;
+  BGeneratorRef mCutOff;
+  BGeneratorRef mResonance;
 
   maxiFilter mMaxi;
 };

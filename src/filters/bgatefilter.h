@@ -2,6 +2,7 @@
 #define _BA_GATEFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BGateFilter : public BEngineFilter
@@ -11,10 +12,10 @@ class BGateFilter : public BEngineFilter
 
 public:
   BGateFilter(QObject* aParent,
-              double aThreshold,
-              long aHoldTime,
-              double aAttach,
-              double aRelease);
+              BGenerator* aThreshold,
+              BGenerator* aHoldTime,
+              BGenerator* aAttach,
+              BGenerator* aRelease);
   virtual ~BGateFilter();
 
   virtual QString writeFilter();
@@ -49,10 +50,10 @@ private:
                                       QScriptEngine* aEngine);
 
 private:
-  double mThreshold;
-  long mHoldtime;
-  double mAttach;
-  double mRelease;
+  BGeneratorRef mThreshold;
+  BGeneratorRef mHoldtime;
+  BGeneratorRef mAttach;
+  BGeneratorRef mRelease;
 
   maxiDyn mMaxi;
 };

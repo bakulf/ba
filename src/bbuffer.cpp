@@ -1,17 +1,18 @@
 #include "bbuffer.h"
 #include "bapplication.h"
+#include "bnumbergenerator.h"
 
 #include <QSettings>
 #include <iostream>
 #include <stdio.h>
 
-BBuffer::BBuffer(QObject *aParent)
-: QObject(aParent)
+BBuffer::BBuffer(BApplication* aApp)
+: QObject(aApp)
 , mType(NoData)
 , mData(NULL)
 , mDataSize(0)
 , mDataPosition(0.0)
-, mSpeed(1.0)
+, mSpeed(new BNumberGenerator(1.0))
 , mLoop(false)
 , mPlaying(false)
 {
@@ -36,25 +37,27 @@ BBuffer::setRecData(double* aData, size_t aSize)
 }
 
 void
-BBuffer::setNoiseData()
+BBuffer::setGeneratorData(BGenerator* aGenerator)
 {
-  mType = NoiseData;
+  mType = GeneratorData;
+  mGenerator = aGenerator;
 }
 
-void
-BBuffer::setTypeDataString(QString& aType)
+QScriptValue
+BBuffer::typeDataObject(BScriptEngine* aEngine) const
 {
-  if (aType == "rec") {
-    setTypeData(mData ? RecData : NoData);
-    return;
+  switch (mType) {
+    case NoData:
+      return QScriptValue(QScriptValue::NullValue);
+
+    case  RecData:
+      return QScriptValue("rec");
+
+    case  GeneratorData:
+      return mGenerator->objGenerator(aEngine);
   }
 
-  if(aType == "noise") {
-    setTypeData(NoiseData);
-    return;
-  }
-
-  setTypeData(NoData);
+  return QScriptValue(QScriptValue::NullValue);
 }
 
 void
@@ -85,8 +88,8 @@ BBuffer::info() const
       msg.append(BAudio::byte2str(mDataSize));
       break;
 
-    case NoiseData:
-      msg.append("Noise Data");
+    case GeneratorData:
+      msg.append("Generator Data");
       break;
   }
 
@@ -110,7 +113,7 @@ BBuffer::canPlay() const
       }
       break;
 
-    case NoiseData:
+    case GeneratorData:
       break;
   }
 
@@ -137,9 +140,9 @@ BBuffer::output(double *aOutput)
 
       break;
 
-    case NoiseData:
+    case GeneratorData:
       for (int j=0; j < maxiSettings::channels; ++j) {
-        aOutput[j] = (double)qrand() / (double)RAND_MAX;
+        aOutput[j] = mGenerator->get();
       }
       break;
   }
@@ -157,7 +160,7 @@ BBuffer::outputLoop(double* aOutput)
 
   if (mSpeed >=0) {
     for (int j=0; j < maxiSettings::channels; ++j) {
-      mDataPosition += mSpeed;
+      mDataPosition += mSpeed->get();
 
       if ((size_t)mDataPosition >= mDataSize - 1) {
         mDataPosition = 1;
@@ -181,7 +184,7 @@ BBuffer::outputLoop(double* aOutput)
     }
   } else {
     for (int j=0; j < maxiSettings::channels; ++j) {
-      mDataPosition += mSpeed;
+      mDataPosition += mSpeed->get();
 
       if (mDataPosition < 0) {
         mDataPosition = mDataSize;
@@ -210,7 +213,7 @@ void
 BBuffer::outputNoLoop(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    mDataPosition = mDataPosition + mSpeed;
+    mDataPosition = mDataPosition + mSpeed->get();
     double remainder = mDataPosition - floor(mDataPosition);
 
     if ((size_t)mDataPosition < mDataSize) {

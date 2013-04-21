@@ -2,9 +2,8 @@
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-#include <iostream>
-
-BHipassFilter::BHipassFilter(QObject* aParent, double aCutOff)
+BHipassFilter::BHipassFilter(QObject* aParent,
+                             BGenerator* aCutOff)
 : BEngineFilter(aParent, QString("hipass"))
 , mCutOff(aCutOff)
 {
@@ -18,7 +17,7 @@ void
 BHipassFilter::output(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    aOutput[j] = mMaxi.hipass(aOutput[j], mCutOff);
+    aOutput[j] = mMaxi.hipass(aOutput[j], mCutOff->get());
   }
 }
 
@@ -27,13 +26,19 @@ BHipassFilter::updateFunction(QScriptContext* aContext,
                               QScriptEngine*)
 {
   if (aContext->argumentCount() < 1) {
-    std::cerr << "Hipass.update(cutOff) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hipass.update(cutOff) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!cutOff) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hipass.update(cutOff) used wrongly.");
   }
 
   BHipassFilter* filter = static_cast<BHipassFilter*>(aContext->thisObject().toQObject());
 
-  filter->mCutOff = aContext->argument(0).toNumber();
+  filter->mCutOff = cutOff;
 
   return QScriptValue();
 }
@@ -43,13 +48,18 @@ BHipassFilter::engineFunction(QScriptContext* aContext,
                               QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 1) {
-    std::cerr << "Hipass(cutOff) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hipass(cutOff) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!cutOff) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hipass(cutOff) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BHipassFilter* filter = new BHipassFilter(engine->app(),
-                                            aContext->argument(0).toNumber());
+  BHipassFilter* filter = new BHipassFilter(engine->app(), cutOff);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -69,23 +79,12 @@ BHipassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BHipassFilter::cutOffFunction(QScriptContext* aContext,
-                              QScriptEngine*)
-{
-  BHipassFilter* filter = static_cast<BHipassFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mCutOff = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mCutOff);
-}
+METHOD_FUNCTION(BHipassFilter, cutOffFunction, mCutOff, "Hipass", "cutOff")
 
 QString
 BHipassFilter::writeFilter()
 {
   QString line;
-  line.sprintf("Filter: %s - cutOff %3.2f", qPrintable(name()), mCutOff);
+  line.sprintf("Filter: %s - cutOff %3.2f", qPrintable(name()), mCutOff->get());
   return line;
 }

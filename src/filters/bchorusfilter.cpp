@@ -2,10 +2,11 @@
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-#include <iostream>
-
-BChorusFilter::BChorusFilter(QObject* aParent, int aDelay, double aFeedback,
-                             double aSpeed, double aDepth)
+BChorusFilter::BChorusFilter(QObject* aParent,
+                             BGenerator* aDelay,
+                             BGenerator* aFeedback,
+                             BGenerator* aSpeed,
+                             BGenerator* aDepth)
 : BEngineFilter(aParent, QString("chorus"))
 , mDelay(aDelay)
 , mFeedback(aFeedback)
@@ -22,7 +23,9 @@ void
 BChorusFilter::output(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    aOutput[j] = mMaxi.chorus(aOutput[j], mDelay, mFeedback, mSpeed, mDepth);
+    aOutput[j] = mMaxi.chorus(aOutput[j], mDelay->get(),
+                              mFeedback->get(), mSpeed->get(),
+                              mDepth->get());
   }
 }
 
@@ -31,16 +34,26 @@ BChorusFilter::updateFunction(QScriptContext* aContext,
                               QScriptEngine*)
 {
   if (aContext->argumentCount() < 4) {
-    std::cerr << "Chorus.update(delay, feedback, speed, depth) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Chorus.update(delay, feedback, speed, depth) used wrongly.");
+  }
+
+  BGeneratorRef delay = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef feedback = BGenerator::numberToGenerator(aContext->argument(1));
+  BGeneratorRef speed = BGenerator::numberToGenerator(aContext->argument(2));
+  BGeneratorRef depth = BGenerator::numberToGenerator(aContext->argument(3));
+
+  if (!delay || !feedback || !speed || !depth) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Chorus.update(delay, feedback, speed, depth) used wrongly.");
   }
 
   BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
 
-  filter->mDelay = aContext->argument(0).toInt32();
-  filter->mFeedback = aContext->argument(1).toNumber();
-  filter->mSpeed = aContext->argument(2).toNumber();
-  filter->mDepth = aContext->argument(3).toNumber();
+  filter->mDelay = delay;
+  filter->mFeedback = feedback;
+  filter->mSpeed = speed;
+  filter->mDepth = depth;
 
   return QScriptValue();
 }
@@ -50,16 +63,23 @@ BChorusFilter::engineFunction(QScriptContext* aContext,
                               QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 4) {
-    std::cerr << "Chorus(delay, feedback, speed, depth) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Chorus(delay, feedback, speed, depth) used wrongly.");
+  }
+
+  BGeneratorRef delay = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef feedback = BGenerator::numberToGenerator(aContext->argument(1));
+  BGeneratorRef speed = BGenerator::numberToGenerator(aContext->argument(2));
+  BGeneratorRef depth = BGenerator::numberToGenerator(aContext->argument(3));
+
+  if (!delay || !feedback || !speed || !depth) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Chorus(delay, feedback, speed, depth) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BChorusFilter* filter = new BChorusFilter(engine->app(),
-                                            aContext->argument(0).toInt32(),
-                                            aContext->argument(1).toNumber(),
-                                            aContext->argument(2).toNumber(),
-                                            aContext->argument(3).toNumber());
+  BChorusFilter* filter = new BChorusFilter(engine->app(), delay, feedback,
+                                            speed, depth);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -88,63 +108,17 @@ BChorusFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BChorusFilter::delayFunction(QScriptContext* aContext,
-                             QScriptEngine*)
-{
-  BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mDelay = aContext->argument(0).toInt32();
-  }
-
-  return QScriptValue(filter->mDelay);
-}
-
-QScriptValue
-BChorusFilter::feedbackFunction(QScriptContext* aContext,
-                                QScriptEngine*)
-{
-  BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mFeedback = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mFeedback);
-}
-
-QScriptValue
-BChorusFilter::speedFunction(QScriptContext* aContext,
-                             QScriptEngine*)
-{
-  BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mSpeed = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mSpeed);
-}
-
-QScriptValue
-BChorusFilter::depthFunction(QScriptContext* aContext,
-                                QScriptEngine*)
-{
-  BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mDepth = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mDepth);
-}
+METHOD_FUNCTION(BChorusFilter, delayFunction, mDelay, "Chorus", "delay")
+METHOD_FUNCTION(BChorusFilter, feedbackFunction, mFeedback, "Chorus", "feedback")
+METHOD_FUNCTION(BChorusFilter, speedFunction, mSpeed, "Chorus", "speed")
+METHOD_FUNCTION(BChorusFilter, depthFunction, mDepth, "Chorus", "depth")
 
 QString
 BChorusFilter::writeFilter()
 {
   QString line;
-  line.sprintf("Filter: %s - delay %d || feedback %3.2f || speed %3.2f || depth %3.2f",
-               qPrintable(name()), mDelay, mFeedback, mSpeed, mDepth);
+  line.sprintf("Filter: %s - delay %3.2f || feedback %3.2f || speed %3.2f || depth %3.2f",
+               qPrintable(name()), mDelay->get(), mFeedback->get(),
+               mSpeed->get(), mDepth->get());
   return line;
 }

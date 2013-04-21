@@ -2,6 +2,7 @@
 #define _BA_DISTORTIONFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BDistortionFilter : public BEngineFilter
@@ -17,7 +18,7 @@ class BDistortionFilter : public BEngineFilter
 public:
   BDistortionFilter(QObject* aParent,
                     Type aType,
-                    double aShape);
+                    BGenerator* aShape);
   virtual ~BDistortionFilter();
 
   virtual QString writeFilter();
@@ -49,7 +50,7 @@ private:
                                     QScriptEngine* aEngine);
 
 private:
-  double mShape;
+  BGeneratorRef mShape;
   Type mType;
 
   maxiDistortion mMaxi;

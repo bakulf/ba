@@ -170,6 +170,8 @@ BAudio::audioRouting(void* outputBuffer, void* inputBuffer,
 
   BMUTEXLOCKER
 
+  audio->mApp->updateGenerators();
+
   if (audio->mRecording) {
     int total = nBufferFrames * maxiSettings::channels;
 

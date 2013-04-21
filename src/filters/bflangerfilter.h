@@ -2,6 +2,7 @@
 #define _BA_FLANGERFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BFlangerFilter : public BEngineFilter
@@ -11,10 +12,10 @@ class BFlangerFilter : public BEngineFilter
 
 public:
   BFlangerFilter(QObject* aParent,
-                 int aDelay,
-                 double aFeedback,
-                 double aSpeed,
-                 double aDepth);
+                 BGenerator* aDelay,
+                 BGenerator* aFeedback,
+                 BGenerator* aSpeed,
+                 BGenerator* aDepth);
   virtual ~BFlangerFilter();
 
   virtual QString writeFilter();
@@ -49,10 +50,10 @@ private:
                                     QScriptEngine* aEngine);
 
 private:
-  int mDelay;
-  double mFeedback;
-  double mSpeed;
-  double mDepth;
+  BGeneratorRef mDelay;
+  BGeneratorRef mFeedback;
+  BGeneratorRef mSpeed;
+  BGeneratorRef mDepth;
 
   maxiFlanger mMaxi;
 };

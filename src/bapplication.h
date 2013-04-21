@@ -4,6 +4,7 @@
 #include "bevent.h"
 #include "baudio.h"
 #include "bbuffer.h"
+#include "bgenerator.h"
 
 #include <QCoreApplication>
 #include <QScriptEngine>
@@ -45,6 +46,10 @@ public: // for events
   void quit();
   void selectBuffer(BBuffer* aBuffer);
 
+public: // for generators
+  void registerGenerator(BGenerator* aGenerator);
+  void updateGenerators();
+
 private Q_SLOTS:
   void readStdin(int aSocket);
   void refreshScreen();
@@ -84,6 +89,8 @@ private:
   BTimer* mTimer;
 
   BScriptEngine* mScriptEngine;
+
+  QList<BGeneratorRef> mGenerators;
 };
 
 #endif

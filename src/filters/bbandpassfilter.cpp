@@ -1,11 +1,11 @@
 #include "bbandpassfilter.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
-
-#include <iostream>
+#include "bgenerator.h"
 
 BBandpassFilter::BBandpassFilter(QObject* aParent,
-                                 double aCutOff, double aResonance)
+                                 BGenerator* aCutOff,
+                                 BGenerator* aResonance)
 : BEngineFilter(aParent, QString("bandpass"))
 , mCutOff(aCutOff)
 , mResonance(aResonance)
@@ -20,7 +20,7 @@ void
 BBandpassFilter::output(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    aOutput[j] = mMaxi.bandpass(aOutput[j], mCutOff, mResonance);
+    aOutput[j] = mMaxi.bandpass(aOutput[j], mCutOff->get(), mResonance->get());
   }
 }
 
@@ -29,14 +29,23 @@ BBandpassFilter::updateFunction(QScriptContext* aContext,
                                 QScriptEngine*)
 {
   if (aContext->argumentCount() < 2) {
-    std::cerr << "Bandpass.update(cutOff, resonance) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Bandpass.update(cutOff, resonance) used wrongly.");
   }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef resonance = BGenerator::numberToGenerator(aContext->argument(1));
+
+  if (!cutOff || !resonance) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Bandpass.update(cutOff, resonance) used wrongly.");
+  }
+
 
   BBandpassFilter* filter = static_cast<BBandpassFilter*>(aContext->thisObject().toQObject());
 
-  filter->mCutOff = aContext->argument(0).toNumber();
-  filter->mResonance = aContext->argument(1).toNumber();
+  filter->mCutOff = cutOff;
+  filter->mResonance = resonance;
 
   return QScriptValue();
 }
@@ -46,14 +55,21 @@ BBandpassFilter::engineFunction(QScriptContext* aContext,
                                 QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 2) {
-    std::cerr << "Bandpass(cutOff, resonance) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Bandpass(cutOff, resonance) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef resonance = BGenerator::numberToGenerator(aContext->argument(1));
+
+  if (!cutOff || !resonance) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Bandpass(cutOff, resonance) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   BBandpassFilter* filter = new BBandpassFilter(engine->app(),
-                                                aContext->argument(0).toNumber(),
-                                                aContext->argument(1).toNumber());
+                                                cutOff, resonance);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -76,37 +92,14 @@ BBandpassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BBandpassFilter::cutOffFunction(QScriptContext* aContext,
-                                QScriptEngine*)
-{
-  BBandpassFilter* filter = static_cast<BBandpassFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mCutOff = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mCutOff);
-}
-
-QScriptValue
-BBandpassFilter::resonanceFunction(QScriptContext* aContext,
-                                   QScriptEngine*)
-{
-  BBandpassFilter* filter = static_cast<BBandpassFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mResonance = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mResonance);
-}
+METHOD_FUNCTION(BBandpassFilter, cutOffFunction, mCutOff, "Bandpass", "cutOff");
+METHOD_FUNCTION(BBandpassFilter, resonanceFunction, mResonance, "Bandpass", "resonance");
 
 QString
 BBandpassFilter::writeFilter()
 {
   QString line;
   line.sprintf("Filter: %s - cutOff %3.2f || resonance %3.2f", qPrintable(name()),
-              mCutOff, mResonance);
+              mCutOff->get(), mResonance->get());
   return line;
 }

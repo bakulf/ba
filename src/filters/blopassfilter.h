@@ -2,6 +2,7 @@
 #define _BA_LOPASSFILTER_H_
 
 #include "bengine.h"
+#include "bgenerator.h"
 #include "maximilian.h"
 
 class BLopassFilter : public BEngineFilter
@@ -11,7 +12,7 @@ class BLopassFilter : public BEngineFilter
 
 public:
   BLopassFilter(QObject* aParent,
-                double aCutOff);
+                BGenerator* aCutOff);
   virtual ~BLopassFilter();
 
   virtual QString writeFilter();
@@ -37,7 +38,7 @@ private:
                                      QScriptEngine* aEngine);
 
 private:
-  double mCutOff;
+  BGeneratorRef mCutOff;
 
   maxiFilter mMaxi;
 };

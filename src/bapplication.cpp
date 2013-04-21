@@ -4,13 +4,13 @@
 #include "bevent.h"
 #include "bscriptengine.h"
 #include "btimer.h"
+#include "bgenerator.h"
 #include "bmutexlocker.h"
 
 #include <QDomElement>
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QTimer>
-#include <QTime>
 #include <QFile>
 
 #include <sys/types.h>
@@ -29,10 +29,6 @@ BApplication::BApplication(int argc, char** argv)
 
   mTimer = new BTimer(this);
   mScriptEngine = new BScriptEngine(this);
-
-  // Random numbers
-  QTime midnight(0, 0, 0);
-  qsrand(midnight.secsTo(QTime::currentTime()));
 }
 
 BApplication::~BApplication()
@@ -126,7 +122,7 @@ BApplication::refreshScreen()
     writeES(str, size);
     size = snprintf(str, sizeof(str), "  Loop: %3s - Speed: %f - Volume: ",
                     buffer->loop() ? "yes" : "no",
-                    buffer->speed());
+                    buffer->speed()->get());
     writeReal(str, size);
 
     QString volume = BEngine::writeVolume(buffer->engine());
@@ -137,7 +133,7 @@ BApplication::refreshScreen()
       size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
       writeES(str, size);
 
-      size = snprintf(str, sizeof(str), "%s", qPrintable(filter));
+      size = snprintf(str, sizeof(str), "  %s", qPrintable(filter));
       writeReal(str, size);
     }
 
@@ -396,5 +392,19 @@ BApplication::writeReal(const char* buffer, unsigned int length)
     }
 
     done += ret;
+  }
+}
+
+void
+BApplication::registerGenerator(BGenerator* aGenerator)
+{
+  mGenerators << aGenerator;
+}
+
+void
+BApplication::updateGenerators()
+{
+  foreach (const BGeneratorRef& generator, mGenerators) {
+    generator->generate();
   }
 }

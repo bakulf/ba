@@ -2,9 +2,9 @@
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-#include <iostream>
-
-BHiresFilter::BHiresFilter(QObject* aParent, double aCutOff, double aResonance)
+BHiresFilter::BHiresFilter(QObject* aParent,
+                           BGenerator* aCutOff,
+                           BGenerator* aResonance)
 : BEngineFilter(aParent, QString("hires"))
 , mCutOff(aCutOff)
 , mResonance(aResonance)
@@ -19,7 +19,7 @@ void
 BHiresFilter::output(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    aOutput[j] = mMaxi.hires(aOutput[j], mCutOff, mResonance);
+    aOutput[j] = mMaxi.hires(aOutput[j], mCutOff->get(), mResonance->get());
   }
 }
 
@@ -28,18 +28,22 @@ BHiresFilter::updateFunction(QScriptContext* aContext,
                              QScriptEngine*)
 {
   if (aContext->argumentCount() < 2) {
-    std::cerr << "Hires.update(cutOff, resonance) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hires.update(cutOff, resonance) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef resonance = BGenerator::numberToGenerator(aContext->argument(1));
+
+  if (!cutOff || !resonance) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hires.update(cutOff, resonance) used wrongly.");
   }
 
   BHiresFilter* filter = static_cast<BHiresFilter*>(aContext->thisObject().toQObject());
-  if (!filter) {
-    std::cerr << "Hires.update(cutOff, resonance) used wrongly." << std::endl;
-    return QScriptValue();
-  }
 
-  filter->mCutOff = aContext->argument(0).toNumber();
-  filter->mResonance = aContext->argument(1).toNumber();
+  filter->mCutOff = cutOff;
+  filter->mResonance = resonance;
 
   return QScriptValue();
 }
@@ -49,14 +53,20 @@ BHiresFilter::engineFunction(QScriptContext* aContext,
                              QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 2) {
-    std::cerr << "Hires(cutOff, resonance) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hires(cutOff, resonance) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  BGeneratorRef resonance = BGenerator::numberToGenerator(aContext->argument(1));
+
+  if (!cutOff || !resonance) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Hires(cutOff, resonance) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BHiresFilter* filter = new BHiresFilter(engine->app(),
-                                          aContext->argument(0).toNumber(),
-                                          aContext->argument(1).toNumber());
+  BHiresFilter* filter = new BHiresFilter(engine->app(), cutOff, resonance);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -79,37 +89,14 @@ BHiresFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BHiresFilter::cutOffFunction(QScriptContext* aContext,
-                             QScriptEngine*)
-{
-  BHiresFilter* filter = static_cast<BHiresFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mCutOff = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mCutOff);
-}
-
-QScriptValue
-BHiresFilter::resonanceFunction(QScriptContext* aContext,
-                                QScriptEngine*)
-{
-  BHiresFilter* filter = static_cast<BHiresFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mResonance = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mResonance);
-}
+METHOD_FUNCTION(BHiresFilter, cutOffFunction, mCutOff, "Hires", "cutOff")
+METHOD_FUNCTION(BHiresFilter, resonanceFunction, mResonance, "Hires", "resonance")
 
 QString
 BHiresFilter::writeFilter()
 {
   QString line;
   line.sprintf("Filter: %s - cutOff %3.2f || resonance %3.2f", qPrintable(name()),
-               mCutOff, mResonance);
+               mCutOff->get(), mResonance->get());
   return line;
 }

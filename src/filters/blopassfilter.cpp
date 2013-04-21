@@ -2,9 +2,8 @@
 #include "bscriptengine.h"
 #include "bapplication.h"
 
-#include <iostream>
-
-BLopassFilter::BLopassFilter(QObject* aParent, double aCutOff)
+BLopassFilter::BLopassFilter(QObject* aParent,
+                             BGenerator* aCutOff)
 : BEngineFilter(aParent, QString("lopass"))
 , mCutOff(aCutOff)
 {
@@ -18,7 +17,7 @@ void
 BLopassFilter::output(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
-    aOutput[j] = mMaxi.lopass(aOutput[j], mCutOff);
+    aOutput[j] = mMaxi.lopass(aOutput[j], mCutOff->get());
   }
 }
 
@@ -27,13 +26,19 @@ BLopassFilter::updateFunction(QScriptContext* aContext,
                               QScriptEngine*)
 {
   if (aContext->argumentCount() < 1) {
-    std::cerr << "Lopass.update(cutOff) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Lopass.update(cutOff) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!cutOff) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Lopass.update(cutOff) used wrongly.");
   }
 
   BLopassFilter* filter = static_cast<BLopassFilter*>(aContext->thisObject().toQObject());
 
-  filter->mCutOff = aContext->argument(0).toNumber();
+  filter->mCutOff = cutOff;
 
   return QScriptValue();
 }
@@ -43,13 +48,18 @@ BLopassFilter::engineFunction(QScriptContext* aContext,
                               QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 1) {
-    std::cerr << "Lopass(cutOff) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Lopass(cutOff) used wrongly.");
+  }
+
+  BGeneratorRef cutOff = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!cutOff) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Lopass(cutOff) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BLopassFilter* filter = new BLopassFilter(engine->app(),
-                                            aContext->argument(0).toNumber());
+  BLopassFilter* filter = new BLopassFilter(engine->app(), cutOff);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -69,23 +79,12 @@ BLopassFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BLopassFilter::cutOffFunction(QScriptContext* aContext,
-                              QScriptEngine*)
-{
-  BLopassFilter* filter = static_cast<BLopassFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mCutOff = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mCutOff);
-}
+METHOD_FUNCTION(BLopassFilter, cutOffFunction, mCutOff, "Lopass", "cutOff")
 
 QString
 BLopassFilter::writeFilter()
 {
   QString line;
-  line.sprintf("Filter: %s - cutOff %3.2f", qPrintable(name()), mCutOff);
+  line.sprintf("Filter: %s - cutOff %3.2f", qPrintable(name()), mCutOff->get());
   return line;
 }

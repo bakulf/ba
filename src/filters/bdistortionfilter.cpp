@@ -1,10 +1,10 @@
 #include "bdistortionfilter.h"
 #include "bscriptengine.h"
 #include "bapplication.h"
+#include "bgenerator.h"
 
-#include <iostream>
-
-BDistortionFilter::BDistortionFilter(QObject* aParent, Type aType, double aShape)
+BDistortionFilter::BDistortionFilter(QObject* aParent, Type aType,
+                                     BGenerator* aShape)
 : BEngineFilter(aParent, aType == ATAN ? QString("atandistortion") : QString("fastatandistortion"))
 , mShape(aShape)
 , mType(aType)
@@ -20,11 +20,11 @@ BDistortionFilter::output(double* aOutput)
 {
   if (mType == ATAN) {
     for (int j=0; j < maxiSettings::channels; ++j) {
-      aOutput[j] = mMaxi.atanDist(aOutput[j], mShape);
+      aOutput[j] = mMaxi.atanDist(aOutput[j], mShape->get());
     }
   } else {
     for (int j=0; j < maxiSettings::channels; ++j) {
-      aOutput[j] = mMaxi.fastAtanDist(aOutput[j], mShape);
+      aOutput[j] = mMaxi.fastAtanDist(aOutput[j], mShape->get());
     }
   }
 }
@@ -36,13 +36,17 @@ BDistortionFilter::updateFunction(QScriptContext* aContext,
   BDistortionFilter* filter = static_cast<BDistortionFilter*>(aContext->thisObject().toQObject());
 
   if (aContext->argumentCount() < 1) {
-    std::cerr << (filter->mType == ATAN ? "AtanDistortion" : "FastAtanDistortion")
-              << ".update(shape) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Distortion..update(shape) used wrongly.");
   }
 
-  filter->mShape = aContext->argument(0).toNumber();
+  BGeneratorRef shape = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!shape) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Distortion..update(shape) used wrongly.");
+  }
 
+  filter->mShape = shape;
   return QScriptValue();
 }
 
@@ -66,14 +70,19 @@ BDistortionFilter::engineFunction(Type aType,
                                   QScriptEngine* aEngine)
 {
   if (aContext->argumentCount() < 1) {
-    std::cerr << (aType == ATAN ? "AtanDistortion" : "FastAtanDistortion")
-              << "(shape) used wrongly." << std::endl;
-    return QScriptValue();
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Distortion..update(shape) used wrongly.");
+  }
+
+  BGeneratorRef shape = BGenerator::numberToGenerator(aContext->argument(0));
+  if (!shape) {
+    return aContext->throwError(QScriptContext::SyntaxError,
+                                "Distortion..update(shape) used wrongly.");
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
   BDistortionFilter* filter = new BDistortionFilter(engine->app(),
-                                    aType, aContext->argument(0).toNumber());
+                                    aType, shape);
 
   QScriptValue object = filter->objFilter(engine);
 
@@ -93,24 +102,13 @@ BDistortionFilter::engineProperties(QScriptEngine* aEngine, QScriptValue aValue)
     QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 }
 
-QScriptValue
-BDistortionFilter::shapeFunction(QScriptContext* aContext,
-                                 QScriptEngine*)
-{
-  BDistortionFilter* filter = static_cast<BDistortionFilter*>(aContext->thisObject().toQObject());
-
-  if (aContext->argumentCount()) {
-    filter->mShape = aContext->argument(0).toNumber();
-  }
-
-  return QScriptValue(filter->mShape);
-}
+METHOD_FUNCTION(BDistortionFilter, shapeFunction, mShape, "Distortion", "shape");
 
 QString
 BDistortionFilter::writeFilter()
 {
   QString line;
   line.sprintf("Filter: %s - shape %3.2f",
-               qPrintable(name()), mShape);
+               qPrintable(name()), mShape->get());
   return line;
 }

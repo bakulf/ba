@@ -2,6 +2,7 @@
 #include "bapplication.h"
 #include "bmutexlocker.h"
 #include "bscriptengine.h"
+#include "bnumbergenerator.h"
 
 #include "bchorusfilter.h"
 #include "bloresfilter.h"
@@ -14,7 +15,6 @@
 #include "bcompressorfilter.h"
 #include "bdistortionfilter.h"
 #include "bflangerfilter.h"
-
 #include "maximilian.h"
 
 #include <QStringList>
@@ -25,43 +25,36 @@ BEngine::BEngine()
 : mObjFilters(QScriptValue::UndefinedValue)
 , mOldFiltersLength(0)
 {
-  mVolumes = new double[maxiSettings::channels];
-
   for (int i = 0; i < maxiSettings::channels; ++i) {
-    mVolumes[i] = 1.0;
+    mVolumes << new BNumberGenerator(1.0);
   }
 }
 
 BEngine::~BEngine()
 {
-  delete[] mVolumes;
 }
 
-double
-BEngine::volume() const
+BGenerator*
+BEngine::volume()
 {
   double volume = 0.0;
 
   for (int i = 0; i < maxiSettings::channels; ++i) {
-    volume += mVolumes[i];
+    volume += mVolumes[i]->get();
   }
 
-  return volume / maxiSettings::channels;
+  return new BNumberGenerator(volume / maxiSettings::channels);
 }
 
 void
-BEngine::setVolume(double aVolume)
+BEngine::setVolume(BGenerator* aVolume)
 {
-  if (aVolume < 0 || aVolume > 1) {
-    return;
-  }
-
   for (int i = 0; i < maxiSettings::channels; ++i) {
     mVolumes[i] = aVolume;
   }
 }
 
-double
+BGenerator*
 BEngine::volume(int aChannel) const
 {
   if (aChannel < 0 || aChannel >= maxiSettings::channels) {
@@ -72,12 +65,8 @@ BEngine::volume(int aChannel) const
 }
 
 void
-BEngine::setVolume(double aVolume, int aChannel)
+BEngine::setVolume(BGenerator* aVolume, int aChannel)
 {
-  if (aVolume < 0 || aVolume > 1) {
-    return;
-  }
-
   if (aChannel < 0 || aChannel >= maxiSettings::channels) {
     return;
   }
@@ -191,7 +180,14 @@ BEngine::output(double *aOutput)
   }
 
   for (int i = 0; i < maxiSettings::channels; ++i) {
-    aOutput[i] *= mVolumes[i];
+    double volume = mVolumes[i]->get();
+    if (volume < 0.0) {
+      volume = 0.0;
+    } else if(volume > 1.0) {
+      volume = 1.0;
+    }
+
+    aOutput[i] *= volume;
   }
 }
 
@@ -201,7 +197,7 @@ BEngine::filterFactory(QScriptEngine* aEngine)
   // Chorus
   QScriptValue chorusProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Chorus",
-  aEngine->newFunction(BChorusFilter::engineFunction, chorusProto));
+    aEngine->newFunction(BChorusFilter::engineFunction, chorusProto));
 
   // Lores
   QScriptValue loresProto = aEngine->newObject();
@@ -268,12 +264,12 @@ BEngine::writeVolume(BEngine& aEngine)
 {
   QString str;
 
-  str.sprintf("%1.2f [", aEngine.volume());
+  str.sprintf("%1.2f [", aEngine.volume()->get());
 
   for (int i = 0; i < maxiSettings::channels; ++i) {
     char tmp[1024];
     snprintf(tmp, sizeof(tmp), "%s%1.2f", (i ? ", " : ""),
-             aEngine.volume(i));
+             aEngine.volume(i)->get());
     str.append(tmp);
   }
 
