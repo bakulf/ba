@@ -40,7 +40,8 @@ BLoresFilter::updateFunction(QScriptContext* aContext,
                                 "Lores.update(cutOff, resonance) used wrongly.");
   }
 
-  BLoresFilter* filter = static_cast<BLoresFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BLoresFilterRef filter = static_cast<BLoresFilter*>(shell->get());
 
   filter->mCutOff = cutOff;
   filter->mResonance = resonance;
@@ -66,7 +67,7 @@ BLoresFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BLoresFilter* filter = new BLoresFilter(engine->app(),
+  BLoresFilterRef filter = new BLoresFilter(engine->app(),
                                           cutOff, resonance);
 
   QScriptValue object = filter->objFilter(engine);

@@ -43,4 +43,6 @@ private:
   maxiFilter mMaxi;
 };
 
+typedef BRef<BLopassFilter> BLopassFilterRef;
+
 #endif

@@ -36,7 +36,8 @@ BHipassFilter::updateFunction(QScriptContext* aContext,
                                 "Hipass.update(cutOff) used wrongly.");
   }
 
-  BHipassFilter* filter = static_cast<BHipassFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BHipassFilterRef filter = static_cast<BHipassFilter*>(shell->get());
 
   filter->mCutOff = cutOff;
 
@@ -59,7 +60,7 @@ BHipassFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BHipassFilter* filter = new BHipassFilter(engine->app(), cutOff);
+  BHipassFilterRef filter = new BHipassFilter(engine->app(), cutOff);
 
   QScriptValue object = filter->objFilter(engine);
 

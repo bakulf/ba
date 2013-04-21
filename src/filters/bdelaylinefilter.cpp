@@ -52,7 +52,8 @@ BDelaylineFilter::updateFunction(QScriptContext* aContext,
                                 "Delayline.update(size, feedback[, position]) used wrongly.");
   }
 
-  BDelaylineFilter* filter = static_cast<BDelaylineFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BDelaylineFilterRef filter = static_cast<BDelaylineFilter*>(shell->get());
 
   filter->mSize = size;
   filter->mFeedback = feedback;
@@ -87,8 +88,8 @@ BDelaylineFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BDelaylineFilter* filter = new BDelaylineFilter(engine->app(), size,
-                                                  feedback, position);
+  BDelaylineFilterRef filter = new BDelaylineFilter(engine->app(), size,
+                                                    feedback, position);
 
   QScriptValue object = filter->objFilter(engine);
 

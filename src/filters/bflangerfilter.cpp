@@ -48,7 +48,8 @@ BFlangerFilter::updateFunction(QScriptContext* aContext,
                                 "Flanger.update(delay, feedback, speed, depth) used wrongly.");
   }
 
-  BFlangerFilter* filter = static_cast<BFlangerFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BFlangerFilterRef filter = static_cast<BFlangerFilter*>(shell->get());
 
   filter->mDelay = delay;
   filter->mFeedback = feedback;
@@ -78,8 +79,8 @@ BFlangerFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BFlangerFilter* filter = new BFlangerFilter(engine->app(),
-                                              delay, feedback, speed, depth);
+  BFlangerFilterRef filter = new BFlangerFilter(engine->app(),
+                                                delay, feedback, speed, depth);
 
   QScriptValue object = filter->objFilter(engine);
 

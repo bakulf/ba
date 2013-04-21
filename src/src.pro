@@ -50,6 +50,7 @@ GENERATORS_SOURCES = bnoisegenerator.cpp \
                      bnumbergenerator.cpp
 
 HEADERS = bapplication.h \
+          bref.h \
           baudio.h \
           bbuffer.h \
           bevent.h \

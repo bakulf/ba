@@ -7,27 +7,11 @@
 BGenerator::BGenerator(QString aName)
 : mObjGenerator(QScriptValue::UndefinedValue)
 , mName(aName) 
-, mRef(0)
 {
 }
 
 BGenerator::~BGenerator()
 {
-}
-
-void
-BGenerator::addRef()
-{
-  ++mRef;
-}
-
-void
-BGenerator::release()
-{
-  --mRef;
-  if (!mRef) {
-    deleteLater();
-  }
 }
 
 void
@@ -46,7 +30,8 @@ BGenerator::numberToGenerator(QScriptValue aValue)
     return new BNumberGenerator(aValue.toNumber());
   }
 
-  return static_cast<BGenerator*>(aValue.toQObject());
+  BGeneratorShell* shell = static_cast<BGeneratorShell*>(aValue.toQObject());
+  return shell ? shell->get() : NULL;
 }
 
 QScriptValue
@@ -66,7 +51,8 @@ BGenerator::makeObjGenerator(BScriptEngine* aEngine)
     return;
   }
 
-  QScriptValue obj = aEngine->newQObject(this);
+  BGeneratorShell* shell = new BGeneratorShell(this);
+  QScriptValue obj = aEngine->newQObject(shell, QScriptEngine::ScriptOwnership);
 
   // name
   obj.setProperty("name", aEngine->newFunction(funcGeneratorName),
@@ -82,6 +68,6 @@ QScriptValue
 BGenerator::funcGeneratorName(QScriptContext* aContext,
                               QScriptEngine*)
 {
-  BGenerator* generator = static_cast<BGenerator*>(aContext->thisObject().toQObject());
-  return QScriptValue(generator->name());
+  BGeneratorShell* shell = static_cast<BGeneratorShell*>(aContext->thisObject().toQObject());
+  return QScriptValue(shell->get()->name());
 }

@@ -48,7 +48,8 @@ BChorusFilter::updateFunction(QScriptContext* aContext,
                                 "Chorus.update(delay, feedback, speed, depth) used wrongly.");
   }
 
-  BChorusFilter* filter = static_cast<BChorusFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BChorusFilterRef filter = static_cast<BChorusFilter*>(shell->get());
 
   filter->mDelay = delay;
   filter->mFeedback = feedback;
@@ -78,8 +79,8 @@ BChorusFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BChorusFilter* filter = new BChorusFilter(engine->app(), delay, feedback,
-                                            speed, depth);
+  BChorusFilterRef filter = new BChorusFilter(engine->app(), delay, feedback,
+                                              speed, depth);
 
   QScriptValue object = filter->objFilter(engine);
 

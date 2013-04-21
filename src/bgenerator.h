@@ -1,22 +1,21 @@
 #ifndef _BA_GENERATOR_H_
 #define _BA_GENERATOR_H_
 
+#include "bref.h"
+
 #include <QScriptValue>
-#include <iostream>
 
 class BScriptEngine;
 class QScriptContext;
 
-class BGenerator : public QObject
+class BGenerator : public QObject,
+                   public BRefObj
 {
   Q_OBJECT
 
 public:
   BGenerator(QString aName);
   virtual ~BGenerator();
-
-  void addRef();
-  void release();
 
   QString name() const { return mName; }
 
@@ -42,106 +41,32 @@ protected:
 protected:
   QScriptValue mObjGenerator;
   QString mName;
-
-  quint64 mRef;
 };
 
-class BGeneratorRef
+typedef BRef<BGenerator> BGeneratorRef;
+
+class BGeneratorShell : public QObject
 {
+  Q_OBJECT
+
 public:
-  BGeneratorRef()
-  : mRawPtr(0)
+  BGeneratorShell(BGenerator* aObj)
+  : mObj(aObj)
   {
   }
 
-  BGeneratorRef(const BGeneratorRef& aCopy)
-  : mRawPtr(aCopy.mRawPtr)
+  virtual ~BGeneratorShell()
   {
-    if (mRawPtr) {
-      mRawPtr->addRef();
-    }
-  }
-
-  BGeneratorRef(BGenerator* aRawPtr)
-  : mRawPtr(aRawPtr)
-  {
-    if (mRawPtr) {
-      mRawPtr->addRef();
-    }
-  }
-
-  virtual ~BGeneratorRef()
-  {
-    if (mRawPtr) {
-      mRawPtr->release();
-    }
-  }
-
-  BGeneratorRef&
-  operator=(const BGeneratorRef& aCopy)
-  {
-    assignWithAddRef(aCopy.mRawPtr);
-    return *this;
-  }
-
-  BGeneratorRef&
-  operator=(BGenerator* aRawPtr)
-  {
-    assignWithAddRef(aRawPtr);
-    return *this;
   }
 
   BGenerator*
-  get() const
+  get()
   {
-    return mRawPtr;
-  }
-
-  operator BGenerator*() const
-  {
-    return get();
-  }
-
-  BGenerator*
-  operator->() const
-  {
-    if (!mRawPtr) {
-      std::cerr << "You can't dereference a NULL nsRefPtr with operator->()." << std::endl;
-    }
-    return get();
-  }
-
-  BGenerator&
-  operator*() const
-  {
-    if (!mRawPtr) {
-      std::cerr << "You can't dereference a NULL nsRefPtr with operator->()." << std::endl;
-    }
-    return *get();
+    return mObj;
   }
 
 private:
-  void
-  assignWithAddRef(BGenerator* aRawPtr)
-  {
-    if (aRawPtr) {
-      aRawPtr->addRef();
-    }
-    assignAssumingAddRef(aRawPtr);
-  }
-
-  void
-  assignAssumingAddRef(BGenerator* aRawPtr)
-  {
-    BGenerator* oldPtr = mRawPtr;
-    mRawPtr = aRawPtr;
-    if (oldPtr) {
-      oldPtr->release();
-    }
-  }
-
-private:
-  BGenerator* mRawPtr;
+  BGeneratorRef mObj;
 };
 
 #endif

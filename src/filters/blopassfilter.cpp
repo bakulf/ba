@@ -36,7 +36,8 @@ BLopassFilter::updateFunction(QScriptContext* aContext,
                                 "Lopass.update(cutOff) used wrongly.");
   }
 
-  BLopassFilter* filter = static_cast<BLopassFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BLopassFilterRef filter = static_cast<BLopassFilter*>(shell->get());
 
   filter->mCutOff = cutOff;
 
@@ -59,7 +60,7 @@ BLopassFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BLopassFilter* filter = new BLopassFilter(engine->app(), cutOff);
+  BLopassFilterRef filter = new BLopassFilter(engine->app(), cutOff);
 
   QScriptValue object = filter->objFilter(engine);
 

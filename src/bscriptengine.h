@@ -1,6 +1,8 @@
 #ifndef _BA_SCRIPTENGINE_H_
 #define _BA_SCRIPTENGINE_H_
 
+#include "bref.h"
+
 #include <QScriptEngine>
 
 class BApplication;

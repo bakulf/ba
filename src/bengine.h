@@ -1,6 +1,7 @@
 #ifndef _BA_ENGINE_H_
 #define _BA_ENGINE_H_
 
+#include "bref.h"
 #include "bgenerator.h"
 
 #include <QScriptEngine>
@@ -8,6 +9,8 @@
 class BEngineFilter;
 class BScriptEngine;
 class BNumberGenerator;
+
+typedef BRef<BEngineFilter> BEngineFilterRef;
 
 class BEngine : public QObject
 {
@@ -24,7 +27,7 @@ public:
   BGenerator* volume(int aChannel) const;
   void setVolume(BGenerator* aVolume, int aChannel);
 
-  QList<BEngineFilter*>& filters() { return mFilters; }
+  QList<BEngineFilterRef>& filters() { return mFilters; }
 
   void pushFilter(BEngineFilter* aFilter);
   BEngineFilter* popFilter();
@@ -51,14 +54,15 @@ public:
 private:
   QList<BGeneratorRef> mVolumes;
 
-  QList<BEngineFilter*> mFilters;
+  QList<BEngineFilterRef> mFilters;
 
   QScriptValue mObjFilters;
   int mOldFiltersLength;
 };
 
 // Base class for any filter
-class BEngineFilter : public QObject
+class BEngineFilter : public QObject,
+                      public BRefObj
 {
   Q_OBJECT
 
@@ -95,6 +99,30 @@ private:
   bool mEnabled;
 
   QScriptValue mObjFilter;
+};
+
+class BEngineFilterShell : public QObject
+{
+  Q_OBJECT
+
+public:
+  BEngineFilterShell(BEngineFilter* aObj)
+  : mObj(aObj)
+  {
+  }
+
+  virtual ~BEngineFilterShell()
+  {
+  }
+
+  BEngineFilter*
+  get()
+  {
+    return mObj;
+  }
+
+private:
+  BEngineFilterRef mObj;
 };
 
 #define METHOD_FUNCTION( _class , _method , _prop , _cname, _mname )          \

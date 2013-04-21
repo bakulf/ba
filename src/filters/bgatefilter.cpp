@@ -67,7 +67,8 @@ BGateFilter::updateFunction(QScriptContext* aContext,
                                 "Gate.update(threshold, [holdtime=1, attach=1, release=0.9995]) used wrongly.");
   }
 
-  BGateFilter* filter = static_cast<BGateFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BGateFilterRef filter = static_cast<BGateFilter*>(shell->get());
 
   filter->mThreshold = threshold;
   filter->mHoldtime = holdtime;
@@ -116,8 +117,8 @@ BGateFilter::engineFunction(QScriptContext* aContext,
                                 "Gate(threshold, [holdtime=1, attach=1, release=0.9995]) used wrongly.");
   }
 
-  BGateFilter* filter = new BGateFilter(engine->app(), threshold,
-                                        holdtime, attach, release);
+  BGateFilterRef filter = new BGateFilter(engine->app(), threshold,
+                                          holdtime, attach, release);
 
   QScriptValue object = filter->objFilter(engine);
 

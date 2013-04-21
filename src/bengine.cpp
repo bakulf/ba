@@ -87,7 +87,7 @@ BEngine::popFilter()
     return NULL;
   }
 
-  BEngineFilter* filter = mFilters.last();
+  BEngineFilterRef filter = mFilters.last();
   mFilters.removeLast();
   return filter;
 }
@@ -99,7 +99,7 @@ BEngine::shiftFilter()
     return NULL;
   }
 
-  BEngineFilter* filter = mFilters.first();
+  BEngineFilterRef filter = mFilters.first();
   mFilters.removeFirst();
   return filter;
 }
@@ -123,7 +123,7 @@ BEngine::replaceFilter(int aId, BEngineFilter* aFilter)
 BEngineFilter*
 BEngine::findFilter(QString& aName)
 {
-  foreach (BEngineFilter* filter, mFilters) {
+  foreach (const BEngineFilterRef& filter, mFilters) {
     if (filter->name() == aName) {
       return filter;
     }
@@ -135,7 +135,7 @@ BEngine::findFilter(QString& aName)
 void
 BEngine::reverseFilters()
 {
-  QList<BEngineFilter*> filters;
+  QList<BEngineFilterRef> filters;
   for (int i = mFilters.length() - 1; i >= 0; --i) {
     filters.append(mFilters[i]);
   }
@@ -173,7 +173,7 @@ BEngine::refreshObjFilters(QScriptEngine* aEngine)
 void
 BEngine::output(double *aOutput)
 {
-  foreach (BEngineFilter* filter, mFilters) {
+  foreach (const BEngineFilterRef& filter, mFilters) {
     if (filter->enabled()) {
       filter->output(aOutput);
     }
@@ -282,7 +282,7 @@ BEngine::writeFilters(BEngine& aEngine)
 {
   QStringList lines;
 
-  foreach (BEngineFilter* filter, aEngine.filters()) {
+  foreach (const BEngineFilterRef& filter, aEngine.filters()) {
     lines << filter->writeFilter();
   }
 
@@ -318,7 +318,8 @@ BEngineFilter::makeObjFilter(BScriptEngine* aEngine)
     return;
   }
 
-  QScriptValue obj = aEngine->newQObject(this);
+  BEngineFilterShell* shell = new BEngineFilterShell(this);
+  QScriptValue obj = aEngine->newQObject(shell, QScriptEngine::ScriptOwnership);
 
   // name
   obj.setProperty("name", aEngine->newFunction(funcFilterName),
@@ -341,15 +342,16 @@ QScriptValue
 BEngineFilter::funcFilterName(QScriptContext* aContext,
                               QScriptEngine*)
 {
-  BEngineFilter* filter = static_cast<BEngineFilter*>(aContext->thisObject().toQObject());
-  return QScriptValue(filter->name());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  return QScriptValue(shell->get()->name());
 }
 
 QScriptValue
 BEngineFilter::funcFilterEnabled(QScriptContext* aContext,
                                  QScriptEngine*)
 {
-  BEngineFilter* filter = static_cast<BEngineFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BEngineFilterRef filter = shell->get();
 
   if (aContext->argumentCount()) {
     filter->setEnabled(aContext->argument(0).toBool());

@@ -57,4 +57,6 @@ private:
   maxiDyn mMaxi;
 };
 
+typedef BRef<BCompressorFilter> BCompressorFilterRef;
+
 #endif

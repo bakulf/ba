@@ -41,8 +41,8 @@ BBandpassFilter::updateFunction(QScriptContext* aContext,
                                 "Bandpass.update(cutOff, resonance) used wrongly.");
   }
 
-
-  BBandpassFilter* filter = static_cast<BBandpassFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BBandpassFilterRef filter = static_cast<BBandpassFilter*>(shell->get());
 
   filter->mCutOff = cutOff;
   filter->mResonance = resonance;
@@ -68,8 +68,8 @@ BBandpassFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BBandpassFilter* filter = new BBandpassFilter(engine->app(),
-                                                cutOff, resonance);
+  BBandpassFilterRef filter = new BBandpassFilter(engine->app(),
+                                                  cutOff, resonance);
 
   QScriptValue object = filter->objFilter(engine);
 

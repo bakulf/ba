@@ -57,4 +57,6 @@ private:
   maxiChorus mMaxi;
 };
 
+typedef BRef<BChorusFilter> BChorusFilterRef;
+
 #endif

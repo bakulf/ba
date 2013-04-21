@@ -33,8 +33,6 @@ QScriptValue
 BDistortionFilter::updateFunction(QScriptContext* aContext,
                                   QScriptEngine*)
 {
-  BDistortionFilter* filter = static_cast<BDistortionFilter*>(aContext->thisObject().toQObject());
-
   if (aContext->argumentCount() < 1) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "Distortion..update(shape) used wrongly.");
@@ -45,6 +43,9 @@ BDistortionFilter::updateFunction(QScriptContext* aContext,
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "Distortion..update(shape) used wrongly.");
   }
+
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BDistortionFilterRef filter = static_cast<BDistortionFilter*>(shell->get());
 
   filter->mShape = shape;
   return QScriptValue();
@@ -81,8 +82,8 @@ BDistortionFilter::engineFunction(Type aType,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BDistortionFilter* filter = new BDistortionFilter(engine->app(),
-                                    aType, shape);
+  BDistortionFilterRef filter = new BDistortionFilter(engine->app(),
+                                                      aType, shape);
 
   QScriptValue object = filter->objFilter(engine);
 

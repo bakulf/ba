@@ -56,4 +56,6 @@ private:
   maxiDistortion mMaxi;
 };
 
+typedef BRef<BDistortionFilter> BDistortionFilterRef;
+
 #endif

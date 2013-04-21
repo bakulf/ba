@@ -56,6 +56,7 @@ private:
   double* mData;
   size_t mDataSize;
   double mDataPosition;
+
   BGeneratorRef mGenerator;
 
   BGeneratorRef mSpeed;

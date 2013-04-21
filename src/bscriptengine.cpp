@@ -559,7 +559,7 @@ BScriptEngine::funcFilter(QScriptContext* aContext,
     return QScriptValue();
   }
 
-  BEngineFilter* filter = static_cast<BEngineFilter*>(aContext->argument(0).toQObject());
+  BEngineFilterShell* filter = static_cast<BEngineFilterShell*>(aContext->argument(0).toQObject());
 
   if (aContext->argumentCount() > 0) {
     if (!filter) {
@@ -567,7 +567,7 @@ BScriptEngine::funcFilter(QScriptContext* aContext,
                                   "wrong access to filter object.");
     }
 
-    audioEngine.replaceFilter(id, filter);
+    audioEngine.replaceFilter(id, filter->get());
   }
 
   return audioEngine.filters()[id]->objFilter(engine);
@@ -604,7 +604,7 @@ BScriptEngine::funcFilterFind(QScriptContext* aContext,
 
   QString name = aContext->argument(0).toString();
 
-  BEngineFilter* filter = audioEngine.findFilter(name);
+  BEngineFilterRef filter = audioEngine.findFilter(name);
   if (filter) {
     return filter->objFilter(engine);
   }
@@ -627,13 +627,13 @@ BScriptEngine::funcFilterPush(QScriptContext* aContext,
   BEngine& audioEngine = buffer ? buffer->engine()
                                 : engine->mApp->audio().engine();
 
-  BEngineFilter* filter = static_cast<BEngineFilter*>(aContext->argument(0).toQObject());
+  BEngineFilterShell* filter = static_cast<BEngineFilterShell*>(aContext->argument(0).toQObject());
   if (!filter) {
     return aContext->throwError(QScriptContext::SyntaxError,
                                 "push(filter) wrongly used.");
   }
 
-  audioEngine.pushFilter(filter);
+  audioEngine.pushFilter(filter->get());
   return QScriptValue(QScriptValue::NullValue);
 }
 
@@ -647,7 +647,7 @@ BScriptEngine::funcFilterPop(QScriptContext* aContext,
   BEngine& audioEngine = buffer ? buffer->engine()
                                 : engine->mApp->audio().engine();
 
-  BEngineFilter* filter = audioEngine.popFilter();
+  BEngineFilterRef filter = audioEngine.popFilter();
   if (!filter) {
     return QScriptValue(QScriptValue::NullValue);
   }
@@ -679,7 +679,7 @@ BScriptEngine::funcFilterShift(QScriptContext* aContext,
   BEngine& audioEngine = buffer ? buffer->engine()
                                 : engine->mApp->audio().engine();
 
-  BEngineFilter* filter = audioEngine.shiftFilter();
+  BEngineFilterRef filter = audioEngine.shiftFilter();
   if (!filter) {
     return QScriptValue(QScriptValue::NullValue);
   }
@@ -711,13 +711,13 @@ BScriptEngine::funcFilterUnshift(QScriptContext* aContext,
                                 : engine->mApp->audio().engine();
 
   for (int i = 0; i < aContext->argumentCount(); ++i) {
-    BEngineFilter* filter = static_cast<BEngineFilter*>(aContext->argument(i).toQObject());
+    BEngineFilterShell* filter = static_cast<BEngineFilterShell*>(aContext->argument(i).toQObject());
     if (!filter) {
       return aContext->throwError(QScriptContext::SyntaxError,
                                   "unshift(filter, [..filters]) wrongly used.");
     }
 
-    audioEngine.addFilter(filter);
+    audioEngine.addFilter(filter->get());
   }
 
   return QScriptValue(QScriptValue::NullValue);

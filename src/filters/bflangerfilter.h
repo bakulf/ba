@@ -58,4 +58,6 @@ private:
   maxiFlanger mMaxi;
 };
 
+typedef BRef<BFlangerFilter> BFlangerFilterRef;
+
 #endif

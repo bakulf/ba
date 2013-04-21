@@ -58,4 +58,6 @@ private:
   maxiDyn mMaxi;
 };
 
+typedef BRef<BGateFilter> BGateFilterRef;
+
 #endif

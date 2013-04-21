@@ -40,7 +40,8 @@ BHiresFilter::updateFunction(QScriptContext* aContext,
                                 "Hires.update(cutOff, resonance) used wrongly.");
   }
 
-  BHiresFilter* filter = static_cast<BHiresFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BHiresFilterRef filter = static_cast<BHiresFilter*>(shell->get());
 
   filter->mCutOff = cutOff;
   filter->mResonance = resonance;
@@ -66,7 +67,7 @@ BHiresFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BHiresFilter* filter = new BHiresFilter(engine->app(), cutOff, resonance);
+  BHiresFilterRef filter = new BHiresFilter(engine->app(), cutOff, resonance);
 
   QScriptValue object = filter->objFilter(engine);
 

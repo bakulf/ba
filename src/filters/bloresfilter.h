@@ -48,4 +48,6 @@ private:
   maxiFilter mMaxi;
 };
 
+typedef BRef<BLoresFilter> BLoresFilterRef;
+
 #endif

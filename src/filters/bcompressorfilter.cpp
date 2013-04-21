@@ -66,7 +66,8 @@ BCompressorFilter::updateFunction(QScriptContext* aContext,
                                 "Compressor.update(ratio, [threshold=0.9, attach=1, release=0.9995]) used wrongly.");
   }
 
-  BCompressorFilter* filter = static_cast<BCompressorFilter*>(aContext->thisObject().toQObject());
+  BEngineFilterShell* shell = static_cast<BEngineFilterShell*>(aContext->thisObject().toQObject());
+  BCompressorFilterRef filter = static_cast<BCompressorFilter*>(shell->get());
 
   filter->mRatio = ratio;
   filter->mThreshold = threshold;
@@ -114,8 +115,9 @@ BCompressorFilter::engineFunction(QScriptContext* aContext,
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
-  BCompressorFilter* filter = new BCompressorFilter(engine->app(),
-                                        ratio, threshold, attach, release);
+  BCompressorFilterRef filter = new BCompressorFilter(engine->app(),
+                                                      ratio, threshold, attach,
+                                                      release);
 
   QScriptValue object = filter->objFilter(engine);
 

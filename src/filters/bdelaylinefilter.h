@@ -52,4 +52,6 @@ private:
   maxiDelayline mMaxi;
 };
 
+typedef BRef<BDelaylineFilter> BDelaylineFilterRef;
+
 #endif
