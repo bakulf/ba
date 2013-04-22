@@ -119,7 +119,7 @@ BOpGenerator::engineProperties(QScriptEngine* aEngine,
     obj.setData(i);
 
     aValue.setProperty(i, obj,
-                       QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
+                       QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
   }
 }
 
@@ -156,6 +156,17 @@ BOpGenerator::inputFunction(QScriptContext* aContext,
 
   if (id < 0 || id > op->mInputs.length()) {
     return QScriptValue();
+  }
+
+  if (aContext->argumentCount() > 0) {
+    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
+    if (!generator) {
+      return aContext->throwError(QScriptContext::SyntaxError,
+                                  "Wrong access to Op object.");
+    }
+
+    op->mInputs.replace(id, generator);
+    op->mValue = op->mType.generate(op->mInputs);
   }
 
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
