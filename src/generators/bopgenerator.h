@@ -49,6 +49,11 @@ protected:
   static double divOp(QList<BGeneratorRef>& aInputs);
   static double modOp(QList<BGeneratorRef>& aInputs);
   static double avgOp(QList<BGeneratorRef>& aInputs);
+  static double powOp(QList<BGeneratorRef>& aInputs);
+  static double sqrtOp(QList<BGeneratorRef>& aInputs);
+  static double logOp(QList<BGeneratorRef>& aInputs);
+  static double log10Op(QList<BGeneratorRef>& aInputs);
+  static double expOp(QList<BGeneratorRef>& aInputs);
 
 private:
   double mValue;

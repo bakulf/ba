@@ -4,13 +4,18 @@
 #include "bapplication.h"
 
 BOpGenerator::OpType BOpGenerator::OpTypes[] = {
-{ 0, "SUM", BOpGenerator::sumOp },
-{ 1, "DIFF", BOpGenerator::diffOp },
-{ 2, "PROD", BOpGenerator::prodOp },
-{ 3, "DIV", BOpGenerator::divOp },
-{ 4, "MOD", BOpGenerator::modOp },
-{ 5, "AVG", BOpGenerator::avgOp },
-{ -1, NULL, NULL }
+{ 0,  "SUM",   BOpGenerator::sumOp },
+{ 1,  "DIFF",  BOpGenerator::diffOp },
+{ 2,  "PROD",  BOpGenerator::prodOp },
+{ 3,  "DIV",   BOpGenerator::divOp },
+{ 4,  "MOD",   BOpGenerator::modOp },
+{ 5,  "AVG",   BOpGenerator::avgOp },
+{ 6,  "POW",   BOpGenerator::powOp },
+{ 7,  "SQRT",  BOpGenerator::sqrtOp },
+{ 8,  "LOG",   BOpGenerator::logOp },
+{ 9,  "LOG10", BOpGenerator::log10Op },
+{ 10, "EXP",   BOpGenerator::expOp },
+{ -1, NULL,     NULL }
 };
 
 BOpGenerator::BOpGenerator(OpType& aType, QList<BGeneratorRef>& aInputs)
@@ -256,6 +261,7 @@ BOpGenerator::modOp(QList<BGeneratorRef>& aInputs)
 
   return value;
 }
+
 double
 BOpGenerator::avgOp(QList<BGeneratorRef>& aInputs)
 {
@@ -266,4 +272,65 @@ BOpGenerator::avgOp(QList<BGeneratorRef>& aInputs)
   }
 
   return value / aInputs.length();
+}
+
+double
+BOpGenerator::powOp(QList<BGeneratorRef>& aInputs)
+{
+  if (aInputs.length() == 0) {
+    return 0;
+  }
+
+  double value = aInputs[0]->get();
+  for (int i = 1; i < aInputs.length(); ++i) {
+    double tmp = aInputs[i]->get();
+    if (!tmp) {
+      value = 0;
+      break;
+    }
+
+    value = pow(value, tmp);
+  }
+
+  return value;
+}
+
+double
+BOpGenerator::sqrtOp(QList<BGeneratorRef>& aInputs)
+{
+  if (aInputs.length() == 0) {
+    return 0;
+  }
+
+  return sqrt(aInputs[0]->get());
+}
+
+double
+BOpGenerator::logOp(QList<BGeneratorRef>& aInputs)
+{
+  if (aInputs.length() == 0) {
+    return 0;
+  }
+
+  return log(aInputs[0]->get());
+}
+
+double
+BOpGenerator::log10Op(QList<BGeneratorRef>& aInputs)
+{
+  if (aInputs.length() == 0) {
+    return 0;
+  }
+
+  return log10(aInputs[0]->get());
+}
+
+double
+BOpGenerator::expOp(QList<BGeneratorRef>& aInputs)
+{
+  if (aInputs.length() == 0) {
+    return 0;
+  }
+
+  return exp(aInputs[0]->get());
 }
