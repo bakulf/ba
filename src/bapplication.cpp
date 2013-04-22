@@ -142,6 +142,17 @@ BApplication::refreshScreen()
     writeES(str, size);
   }
 
+  // Error messages:
+  foreach (const Message& msg, mMessages) {
+    size = snprintf(str, sizeof(str), "\033[%d;0f\033[K",  ++line);
+    writeES(str, size);
+
+    size = snprintf(str, sizeof(str), "[%s] %s",
+                    qPrintable(msg.mTime.toString("hh:mm:ss.zzz")),
+                    qPrintable(msg.mMessage));
+    writeReal(str, size);
+  }
+
   struct winsize ws;
   memset(&ws, 0, sizeof(winsize));
 
@@ -156,7 +167,7 @@ BApplication::refreshScreen()
     }
   }
 
-  foreach (QString filter, filters) {
+  foreach (const QString& filter, filters) {
     size = snprintf(str, sizeof(str), "\033[%d;0f\033[K",  ++line);
     writeES(str, size);
 
@@ -413,5 +424,19 @@ BApplication::updateGenerators()
 
   foreach (const BGeneratorRef& generator, mGenerators) {
     generator->generate(mGeneratorToken);
+  }
+}
+
+void
+BApplication::printMessage(QString aMsg)
+{
+  Message msg;
+  msg.mMessage = aMsg;
+  msg.mTime = QDateTime::currentDateTime();
+
+  mMessages << msg;
+
+  while (mMessages.length() > MAX_ERROR_MESSAGES) {
+    mMessages.pop_front();
   }
 }

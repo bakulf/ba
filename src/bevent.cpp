@@ -26,8 +26,10 @@ BEvent::run()
 
   if (engine->hasUncaughtException()) {
     int line = engine->uncaughtExceptionLineNumber();
-    std::cerr << "Uncaught exception at line" << line << ": "
-              << qPrintable(result.toString()) << std::endl;
+    QString e;
+    e.sprintf("Uncaught exception at line %d: %s", line,
+              qPrintable(result.toString()));
+    engine->app()->printMessage(e);
   }
 }
 

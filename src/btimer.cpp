@@ -1,5 +1,6 @@
 #include "btimer.h"
 #include "bapplication.h"
+#include "bscriptengine.h"
 #include "bmutexlocker.h"
 
 #include <QTimer>
@@ -93,5 +94,16 @@ BTimerData::timeout()
 {
   BMUTEXLOCKER
 
-  mValue.call(QScriptValue(), QScriptValueList());
+  mValue.call();
+  if (mValue.engine()->hasUncaughtException()) {
+    BScriptEngine* engine = static_cast<BScriptEngine*>(mValue.engine());
+
+    int line = engine->uncaughtExceptionLineNumber();
+    QScriptValue result = engine->uncaughtException();
+    QString e;
+    e.sprintf("Uncaught exception at line %d: %s", line,
+              qPrintable(result.toString()));
+
+    engine->app()->printMessage(e);
+  }
 }

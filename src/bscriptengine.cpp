@@ -179,9 +179,10 @@ BScriptEngine::funcSpeed(QScriptContext* aContext,
 
 QScriptValue
 BScriptEngine::funcDump(QScriptContext* aContext,
-                        QScriptEngine*)
+                        QScriptEngine* aEngine)
 {
-  std::cout << qPrintable(aContext->argument(0).toString()) << std::endl;
+  BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);
+  engine->mApp->printMessage(aContext->argument(0).toString());
   return QScriptValue();
 }
 

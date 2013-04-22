@@ -2,10 +2,6 @@
 #include "bapplication.h"
 #include "bnumbergenerator.h"
 
-#include <QSettings>
-#include <iostream>
-#include <stdio.h>
-
 BBuffer::BBuffer(BApplication* aApp)
 : QObject(aApp)
 , mType(NoData)

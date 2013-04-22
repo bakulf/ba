@@ -9,9 +9,12 @@
 #include <QCoreApplication>
 #include <QScriptEngine>
 #include <QList>
+#include <QDateTime>
 
 #include <termios.h>
 #include <unistd.h>
+
+#define MAX_ERROR_MESSAGES 5
 
 class BBuffer;
 class BScriptEngine;
@@ -42,6 +45,8 @@ public:
   BScriptEngine* js() const { return mScriptEngine; }
 
   BTimer* timer() const { return mTimer; }
+
+  void printMessage(QString aMsg);
 
 public: // for events
   void quit();
@@ -95,6 +100,12 @@ private:
 
   QList<BGeneratorRef> mGenerators;
   quint64 mGeneratorToken;
+
+  struct Message {
+    QDateTime mTime;
+    QString mMessage;
+  };
+  QList<Message> mMessages;
 };
 
 #endif
