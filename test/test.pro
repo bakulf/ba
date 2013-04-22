@@ -8,6 +8,7 @@ TESTS = \
   005_rec.config \
   006_filters.config \
   007_noise.config \
+  008_deadlock.config \
   100_bandpassfilter.config \
   101_chorusfilter.config \
   102_compressorfilter.config \
@@ -30,7 +31,8 @@ TESTS = \
   207_sinebufgenerator.config \
   208_sinebuf4generator.config \
   209_sawngenerator.config \
-  210_rectgenerator.config
+  210_rectgenerator.config \
+  211_opgenerator.config
 
 for(test, TESTS) {
   system("./unittest.sh $$test")

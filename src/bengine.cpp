@@ -195,64 +195,52 @@ void
 BEngine::filterFactory(QScriptEngine* aEngine)
 {
   // Chorus
-  QScriptValue chorusProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Chorus",
-    aEngine->newFunction(BChorusFilter::engineFunction, chorusProto));
+    aEngine->newFunction(BChorusFilter::engineFunction));
 
   // Lores
-  QScriptValue loresProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Lores",
-    aEngine->newFunction(BLoresFilter::engineFunction, loresProto));
+    aEngine->newFunction(BLoresFilter::engineFunction));
 
   // Hires
-  QScriptValue hiresProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Hires",
-    aEngine->newFunction(BHiresFilter::engineFunction, hiresProto));
+    aEngine->newFunction(BHiresFilter::engineFunction));
 
   // Bandpass
-  QScriptValue bandpassProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Bandpass",
-    aEngine->newFunction(BBandpassFilter::engineFunction, bandpassProto));
+    aEngine->newFunction(BBandpassFilter::engineFunction));
 
   // Hipass
-  QScriptValue hipassProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Hipass",
-    aEngine->newFunction(BHipassFilter::engineFunction, hipassProto));
+    aEngine->newFunction(BHipassFilter::engineFunction));
 
   // Lopass
-  QScriptValue lopassProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Lopass",
-    aEngine->newFunction(BLopassFilter::engineFunction, lopassProto));
+    aEngine->newFunction(BLopassFilter::engineFunction));
 
   // Delayline
-  QScriptValue delaylineProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Delayline",
-    aEngine->newFunction(BDelaylineFilter::engineFunction, delaylineProto));
+    aEngine->newFunction(BDelaylineFilter::engineFunction));
 
   // Gate
-  QScriptValue gateProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Gate",
-    aEngine->newFunction(BGateFilter::engineFunction, gateProto));
+    aEngine->newFunction(BGateFilter::engineFunction));
 
   // Compressor
-  QScriptValue compressorProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Compressor",
-    aEngine->newFunction(BCompressorFilter::engineFunction, compressorProto));
+    aEngine->newFunction(BCompressorFilter::engineFunction));
 
   // AtanDistortion
-  QScriptValue atandistortionProto = aEngine->newObject();
   aEngine->globalObject().setProperty("AtanDistortion",
-    aEngine->newFunction(BDistortionFilter::engineAtanFunction, atandistortionProto));
+    aEngine->newFunction(BDistortionFilter::engineAtanFunction));
 
   // FastAtanDistortion
-  QScriptValue fastatandistortionProto = aEngine->newObject();
   aEngine->globalObject().setProperty("FastAtanDistortion",
-    aEngine->newFunction(BDistortionFilter::engineFastAtanFunction, fastatandistortionProto));
+    aEngine->newFunction(BDistortionFilter::engineFastAtanFunction));
 
   // Flanger
-  QScriptValue flangerProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Flanger",
-    aEngine->newFunction(BFlangerFilter::engineFunction, fastatandistortionProto));
+    aEngine->newFunction(BFlangerFilter::engineFunction));
 
   // Other effects TODO
   // . maxiEnv

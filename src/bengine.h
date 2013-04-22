@@ -130,7 +130,7 @@ QScriptValue                                                                  \
 _class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
 {                                                                             \
   _shell* shell = static_cast<_shell*>(aContext->thisObject().toQObject());   \
-  _class* filter = static_cast<_class*>(shell->get());                        \
+  _class* obj = static_cast<_class*>(shell->get());                           \
                                                                               \
   if (aContext->argumentCount()) {                                            \
     BGeneratorRef x = BGenerator::numberToGenerator(aContext->argument(0));   \
@@ -139,12 +139,12 @@ _class::_method(QScriptContext* aContext, QScriptEngine* aEngine)             \
                                   "#_cname.#_cname used wrongly.");           \
     }                                                                         \
                                                                               \
-    filter->_prop = x;                                                        \
+    obj->_prop = x;                                                           \
   }                                                                           \
                                                                               \
   BScriptEngine* engine = static_cast<BScriptEngine*>(aEngine);               \
-  return QScriptValue(filter->_prop ? filter->_prop->objGenerator(engine)     \
-                                    : QScriptValue::UndefinedValue);          \
+  return QScriptValue(obj->_prop ? obj->_prop->objGenerator(engine)           \
+                                 : QScriptValue::UndefinedValue);             \
 }
 
 #endif

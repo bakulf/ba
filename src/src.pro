@@ -55,6 +55,7 @@ GENERATORS_HEADERS = bnoisegenerator.h \
                      bsinebuf4generator.h \
                      bsawngenerator.h \
                      brectgenerator.h \
+                     bopgenerator.h \
                      bnumbergenerator.h
 
 GENERATORS_SOURCES = bnoisegenerator.cpp \
@@ -69,6 +70,7 @@ GENERATORS_SOURCES = bnoisegenerator.cpp \
                      bsinebuf4generator.cpp \
                      bsawngenerator.cpp \
                      brectgenerator.cpp \
+                     bopgenerator.cpp \
                      bnumbergenerator.cpp
 
 HEADERS = bapplication.h \

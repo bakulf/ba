@@ -14,6 +14,7 @@
 #include "bsinebuf4generator.h"
 #include "bsawngenerator.h"
 #include "brectgenerator.h"
+#include "bopgenerator.h"
 
 BGenerator::BGenerator(QString aName)
 : mObjGenerator(QScriptValue::UndefinedValue)
@@ -41,64 +42,57 @@ void
 BGenerator::generatorFactory(QScriptEngine* aEngine)
 {
   // Noise
-  QScriptValue noiseProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Noise",
-    aEngine->newFunction(BNoiseGenerator::engineFunction, noiseProto));
+    aEngine->newFunction(BNoiseGenerator::engineFunction));
 
   // Sinewave
-  QScriptValue sinewaveProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Sinewave",
-    aEngine->newFunction(BSinewaveGenerator::engineFunction, sinewaveProto));
+    aEngine->newFunction(BSinewaveGenerator::engineFunction));
 
   // Coswave
-  QScriptValue coswaveProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Coswave",
-    aEngine->newFunction(BCoswaveGenerator::engineFunction, coswaveProto));
+    aEngine->newFunction(BCoswaveGenerator::engineFunction));
 
   // Phasor
-  QScriptValue phasorProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Phasor",
-    aEngine->newFunction(BPhasorGenerator::engineFunction, phasorProto));
+    aEngine->newFunction(BPhasorGenerator::engineFunction));
 
   // Saw
-  QScriptValue sawProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Saw",
-    aEngine->newFunction(BSawGenerator::engineFunction, sawProto));
+    aEngine->newFunction(BSawGenerator::engineFunction));
 
   // Triangle
-  QScriptValue triangleProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Triangle",
-    aEngine->newFunction(BTriangleGenerator::engineFunction, triangleProto));
+    aEngine->newFunction(BTriangleGenerator::engineFunction));
 
   // Square
-  QScriptValue squareProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Square",
-    aEngine->newFunction(BSquareGenerator::engineFunction, squareProto));
+    aEngine->newFunction(BSquareGenerator::engineFunction));
 
   // Pulse
-  QScriptValue pulseProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Pulse",
-    aEngine->newFunction(BPulseGenerator::engineFunction, pulseProto));
+    aEngine->newFunction(BPulseGenerator::engineFunction));
 
   // Sinebuf
-  QScriptValue sinebufProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Sinebuf",
-    aEngine->newFunction(BSinebufGenerator::engineFunction, sinebufProto));
+    aEngine->newFunction(BSinebufGenerator::engineFunction));
 
   // Sinebuf4
-  QScriptValue sinebuf4Proto = aEngine->newObject();
   aEngine->globalObject().setProperty("Sinebuf4",
-    aEngine->newFunction(BSinebuf4Generator::engineFunction, sinebuf4Proto));
+    aEngine->newFunction(BSinebuf4Generator::engineFunction));
 
   // Sawn
-  QScriptValue sawnProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Sawn",
-    aEngine->newFunction(BSawnGenerator::engineFunction, sawnProto));
+    aEngine->newFunction(BSawnGenerator::engineFunction));
 
   // Rect
-  QScriptValue rectProto = aEngine->newObject();
   aEngine->globalObject().setProperty("Rect",
-    aEngine->newFunction(BRectGenerator::engineFunction, rectProto));
+    aEngine->newFunction(BRectGenerator::engineFunction));
+
+  // Op
+  QScriptValue op = aEngine->newFunction(BOpGenerator::engineFunction);
+  BOpGenerator::createPrototype(aEngine, op);
+  aEngine->globalObject().setProperty("Op", op);
 }
 
 BGenerator*
