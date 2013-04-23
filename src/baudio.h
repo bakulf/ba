@@ -39,6 +39,8 @@ private:
 
   void play(double* aOutput);
 
+  bool deviceId(QString aDevice, RtAudio::StreamParameters* aParams);
+
 private:
   BApplication *mApp;
 

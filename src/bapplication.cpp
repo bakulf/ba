@@ -19,6 +19,7 @@
 
 BApplication::BApplication(int argc, char** argv)
 : QCoreApplication(argc, argv)
+, mInputChannels(-1)
 , mTerminalInitialized(false)
 , mEscapeLoop(0)
 , mGeneratorToken(0)
@@ -260,6 +261,16 @@ BApplication::readConfig()
     }
   }
 
+  if (mInputChannels <= 0) {
+    mInputChannels = maxiSettings::channels;
+  }
+
+  if (mInputChannels > maxiSettings::channels) {
+    std::cerr << "Error: the config file '"
+              << qPrintable(mConfigFile)
+              << "' inputChannels cannot not be greater than outputChannels." << std::endl;
+  }
+
   return true;
 }
 
@@ -270,7 +281,11 @@ BApplication::readConfigAudio(QDomElement& aElement)
   for (; !n.isNull(); n = n.nextSibling()) {
     QDomElement e = n.toElement();
 
-    if (e.tagName() == "channels") {
+    if (e.tagName() == "inputChannels") {
+      mInputChannels = e.text().toInt();
+    }
+
+    if (e.tagName() == "outputChannels") {
       maxiSettings::channels = e.text().toInt();
     }
 
@@ -282,8 +297,12 @@ BApplication::readConfigAudio(QDomElement& aElement)
       maxiSettings::bufferSize = e.text().toInt();
     }
 
-    if (e.tagName() == "device") {
-      mAudioDevice = e.text();
+    if (e.tagName() == "inputDevice") {
+      mInputDevice = e.text();
+    }
+
+    if (e.tagName() == "outputDevice") {
+      mOutputDevice = e.text();
     }
 
     if (e.tagName() == "buffers") {

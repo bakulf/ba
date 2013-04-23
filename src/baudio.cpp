@@ -51,39 +51,25 @@ BAudio::init(BApplication* aApp)
     return false;
   }
 
-  RtAudio::StreamParameters params;
+  RtAudio::StreamParameters outParams;
+  RtAudio::StreamParameters inParams;
 
-  if (aApp->audioDevice().isEmpty()) {
-    params.deviceId = mRta->getDefaultOutputDevice();
-  } else {
-    bool found = false;
-    for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
-      if (aApp->audioDevice().toStdString() == mRta->getDeviceInfo(i).name) {
-        found = true;
-        params.deviceId = i;
-        break;
-      }
-    }
-
-    if (!found) {
-      std::cout << "No audio device found with name: `"
-                << qPrintable(aApp->audioDevice()) << "'" << std::endl;
-      std::cout << "The list of available devices is:" << std::endl;
-
-      for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
-        std::cout << mRta->getDeviceInfo(i).name << std::endl;
-      }
-
-      return false;
-    }
+  if (!deviceId(aApp->outputDevice(), &outParams) ||
+      !deviceId(aApp->inputDevice(), &inParams)) {
+    mRta = NULL;
+    return false;
   }
 
-  params.nChannels = maxiSettings::channels;
-  params.firstChannel = 0;
+  outParams.nChannels = maxiSettings::channels;
+  inParams.nChannels = aApp->inputChannels();
+
+  outParams.firstChannel = 0;
+  inParams.firstChannel = 0;
+
   unsigned int bufferFrames = maxiSettings::bufferSize;
 
   try {
-    mRta->openStream(&params, &params, RTAUDIO_FLOAT64,
+    mRta->openStream(&outParams, &inParams, RTAUDIO_FLOAT64,
                      maxiSettings::sampleRate, &bufferFrames,
                      &BAudio::audioRouting, this);
   } catch (RtError& e) {
@@ -96,6 +82,32 @@ BAudio::init(BApplication* aApp)
   mApp = aApp;
 
   return true;
+}
+
+bool
+BAudio::deviceId(QString aDevice, RtAudio::StreamParameters* aParams)
+{
+  if (aDevice.isEmpty()) {
+    aParams->deviceId = mRta->getDefaultOutputDevice();
+    return true;
+  }
+
+  for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
+    if (aDevice.toStdString() == mRta->getDeviceInfo(i).name) {
+      aParams->deviceId = i;
+      return true;
+    }
+  }
+
+  std::cout << "No audio device found with name: `"
+            << qPrintable(aDevice) << "'" << std::endl;
+  std::cout << "The list of available devices is:" << std::endl;
+
+  for (int i = 0, len = mRta->getDeviceCount(); i < len; ++i) {
+    std::cout << mRta->getDeviceInfo(i).name << std::endl;
+  }
+
+  return false;
 }
 
 void
@@ -228,8 +240,15 @@ BAudio::audioRouting(void* outputBuffer, void* inputBuffer,
     }
 
     if (audio->mRecording) {
-      for (int j=0; j < maxiSettings::channels; ++j) {
-        audio->mRecData[audio->mRecDataSize++] = *inBuffer++;
+      double lastValue = 0;
+      for (int j=0; j < audio->mApp->inputChannels(); ++j) {
+        lastValue = *inBuffer++;
+        audio->mRecData[audio->mRecDataSize++] = lastValue;
+      }
+
+      // from inputChannels to outputChannels
+      for (int k=audio->mApp->inputChannels(); k < maxiSettings::channels; ++k) {
+        audio->mRecData[audio->mRecDataSize++] = lastValue;
       }
     }
   }

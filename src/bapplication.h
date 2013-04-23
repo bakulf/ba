@@ -37,7 +37,10 @@ public:
 
   BEventManager& eventManager() { return mEventManager; }
   BAudio& audio() { return mAudio; }
-  QString& audioDevice() { return mAudioDevice; }
+
+  QString& outputDevice() { return mOutputDevice; }
+  QString& inputDevice() { return mInputDevice; }
+  int inputChannels() const { return mInputChannels; }
 
   BBuffer* currentBuffer() const { return mCurrentBuffer; }
   QList<BBuffer*>& buffers() { return mBuffers; }
@@ -77,6 +80,7 @@ private:
 
 private:
   QString mConfigFile;
+  int mInputChannels;
 
   bool mTerminalInitialized;
   termios mOldTerminalSettings;
@@ -85,7 +89,8 @@ private:
   bool mEscapeSequence;
   int mEscapeLoop;
 
-  QString mAudioDevice;
+  QString mInputDevice;
+  QString mOutputDevice;
 
   BAudio mAudio;
 
