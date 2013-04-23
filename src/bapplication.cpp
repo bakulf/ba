@@ -15,6 +15,8 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdio.h>
 
 BApplication::BApplication(int argc, char** argv)
@@ -48,6 +50,14 @@ BApplication::init()
 int
 BApplication::exec()
 {
+  // Auto reload of the config file.
+  QTimer* configTimer = new QTimer(this);
+  configTimer->setInterval(1000);
+  configTimer->setSingleShot(false);
+  configTimer->start();
+  connect(configTimer, SIGNAL(timeout()),
+          this, SLOT(reloadConfig()));
+
   // Notification for the keyboard input
   mStdinNotifier = new QSocketNotifier(STDIN_FILENO,
                                        QSocketNotifier::Read,
@@ -212,6 +222,14 @@ BApplication::readConfig()
     return false;
   }
 
+  struct stat st;
+  if (stat(qPrintable(mConfigFile), &st)) {
+    std::cerr << "Error reading stats about the config file." << std::endl;
+    return false;
+  }
+
+  mConfigMTime = st.st_mtime;
+
   QFile file(mConfigFile);
   if (!file.open(QIODevice::ReadOnly)) {
     std::cerr << "Error: the config file '" << qPrintable(mConfigFile)
@@ -341,6 +359,7 @@ BApplication::readConfigTerminal(QDomElement& aElement)
 bool
 BApplication::readConfigCode(QDomElement& aElement)
 {
+  // First, just a validation.
   QDomNode n = aElement.firstChild();
   for (; !n.isNull(); n = n.nextSibling()) {
     QDomElement e = n.toElement();
@@ -356,13 +375,73 @@ BApplication::readConfigCode(QDomElement& aElement)
         std::cerr << "Any key must have a char attribute." << std::endl;
         return false;
       }
+    }
+  }
 
+  // Here the real work.
+  n = aElement.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
+
+    if (e.tagName() == "key") {
       mEventManager.add(e.attribute("char")[0].toAscii(),
                         new BEvent(this, e.text()));
     }
   }
 
   return true;
+}
+
+void
+BApplication::reloadConfig()
+{
+  struct stat st;
+  if (stat(qPrintable(mConfigFile), &st)) {
+    printMessage("Error reading stats about the config file.");
+    return;
+  }
+
+  if (st.st_mtime == mConfigMTime) {
+    return;
+  }
+
+  mConfigMTime = st.st_mtime;
+
+  QFile file(mConfigFile);
+  if (!file.open(QIODevice::ReadOnly)) {
+    QString msg;
+    msg.sprintf("the config file '%s' cannot be opened.", qPrintable(mConfigFile));
+    printMessage(msg);
+    return;
+  }
+
+  QDomDocument dom;
+  QString errorMsg;
+  int errorLine(0);
+  int errorColumn(0);
+  if (!dom.setContent(&file, false, &errorMsg, &errorLine, &errorColumn)) {
+    QString msg;
+    msg.sprintf("the config file '%s' cannot be parsed.", qPrintable(mConfigFile));
+    printMessage(msg);
+    return;
+  }
+
+  QDomElement root = dom.documentElement();
+  if (root.tagName() != "BA") {
+    QString msg;
+    msg.sprintf("the config file '%s' is not valid for this application.", qPrintable(mConfigFile));
+    printMessage(msg);
+    return;
+  }
+
+  QDomNode n = root.firstChild();
+  for (; !n.isNull(); n = n.nextSibling()) {
+    QDomElement e = n.toElement();
+
+    if (e.tagName() == "code") {
+      readConfigCode(e);
+    }
+  }
 }
 
 bool

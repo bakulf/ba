@@ -242,7 +242,7 @@ BEngine::filterFactory(QScriptEngine* aEngine)
   aEngine->globalObject().setProperty("Flanger",
     aEngine->newFunction(BFlangerFilter::engineFunction));
 
-  // Other effects TODO
+  // Other effects FIXME
   // . maxiEnv
   // . maxiEnvelope
 }

@@ -62,6 +62,7 @@ public: // for generators
 private Q_SLOTS:
   void readStdin(int aSocket);
   void refreshScreen();
+  void reloadConfig();
 
 private:
   bool readConfig();
@@ -80,6 +81,7 @@ private:
 
 private:
   QString mConfigFile;
+  time_t mConfigMTime;
   int mInputChannels;
 
   bool mTerminalInitialized;
