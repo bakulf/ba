@@ -338,7 +338,8 @@ BApplication::readConfigCode(QDomElement& aElement)
         return false;
       }
 
-      mEventManager.add(e.attribute("char")[0], new BEvent(this, e.text()));
+      mEventManager.add(e.attribute("char")[0].toAscii(),
+                        new BEvent(this, e.text()));
     }
   }
 

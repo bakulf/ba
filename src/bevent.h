@@ -30,12 +30,12 @@ public:
   BEventManager();
   virtual ~BEventManager();
 
-  void add(QChar aCh, BEvent* aEvent);
+  void add(char aCh, BEvent* aEvent);
 
-  void handle(QChar aCh);
+  void handle(char aCh);
 
 private:
-  QMap<QChar, BEvent*> mMap;
+  QMap<char, BEvent*> mMap;
 };
 
 #endif

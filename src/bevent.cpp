@@ -43,13 +43,13 @@ BEventManager::~BEventManager()
 }
 
 void
-BEventManager::add(QChar aCh, BEvent* aEvent)
+BEventManager::add(char aCh, BEvent* aEvent)
 {
   mMap[aCh] = aEvent;
 }
 
 void
-BEventManager::handle(QChar aCh)
+BEventManager::handle(char aCh)
 {
   if (!mMap.contains(aCh)) {
     return;
