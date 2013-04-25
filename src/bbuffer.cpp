@@ -4,6 +4,7 @@
 
 BBuffer::BBuffer(BApplication* aApp)
 : QObject(aApp)
+, mApp(aApp)
 , mType(NoData)
 , mData(NULL)
 , mDataSize(0)
@@ -33,6 +34,22 @@ BBuffer::setRecData(double* aData, size_t aSize)
 }
 
 void
+BBuffer::setFileData(QString aFilename)
+{
+  mFilename = aFilename;
+
+  // FIXME: this should run in a separated thread.
+  if (mMaxi.load(qPrintable(mFilename))) {
+    mType = FileData;
+    return;
+  }
+
+  QString msg;
+  msg.sprintf("Error loading file `%s'", qPrintable(mFilename));
+  mApp->printMessage(msg);
+}
+
+void
 BBuffer::setGeneratorData(BGenerator* aGenerator)
 {
   mType = GeneratorData;
@@ -48,6 +65,9 @@ BBuffer::typeDataObject(BScriptEngine* aEngine) const
 
     case  RecData:
       return QScriptValue("rec");
+
+    case  FileData:
+      return QScriptValue(mFilename);
 
     case  GeneratorData:
       return mGenerator->objGenerator(aEngine);
@@ -84,6 +104,11 @@ BBuffer::info() const
       msg.append(BAudio::byte2str(mDataSize));
       break;
 
+    case FileData:
+      msg.append("File: ");
+      msg.append(mFilename);
+      break;
+
     case GeneratorData:
       msg.append("Generator Data");
       break;
@@ -109,6 +134,12 @@ BBuffer::canPlay() const
       }
       break;
 
+    case FileData:
+      if (!mLoop && !mMaxi.canPlay()) {
+        return false;
+      }
+      break;
+
     case GeneratorData:
       break;
   }
@@ -129,9 +160,18 @@ BBuffer::output(double *aOutput)
 
     case RecData:
       if (mLoop) {
-        outputLoop(aOutput);
+        recOutputLoop(aOutput);
       } else {
-        outputNoLoop(aOutput);
+        recOutputNoLoop(aOutput);
+      }
+
+      break;
+
+    case FileData:
+      if (mLoop) {
+        fileOutputLoop(aOutput);
+      } else {
+        fileOutputNoLoop(aOutput);
       }
 
       break;
@@ -148,13 +188,30 @@ BBuffer::output(double *aOutput)
 }
 
 void
-BBuffer::outputLoop(double* aOutput)
+BBuffer::fileOutputLoop(double* aOutput)
+{
+  double value = mMaxi.play(mSpeed->get());
+  for (int j=0; j < maxiSettings::channels; ++j) {
+    aOutput[j] = value;
+  }
+}
+
+void
+BBuffer::fileOutputNoLoop(double* aOutput)
+{
+  double value = mMaxi.playOnce(mSpeed->get());
+  for (int j=0; j < maxiSettings::channels; ++j) {
+    aOutput[j] = value;
+  }
+}
+
+void
+BBuffer::recOutputLoop(double* aOutput)
 {
   double remainder;
   size_t a,b;
 
-
-  if (mSpeed >=0) {
+  if (mSpeed->get() >=0) {
     for (int j=0; j < maxiSettings::channels; ++j) {
       mDataPosition += mSpeed->get();
 
@@ -206,7 +263,7 @@ BBuffer::outputLoop(double* aOutput)
 }
 
 void
-BBuffer::outputNoLoop(double* aOutput)
+BBuffer::recOutputNoLoop(double* aOutput)
 {
   for (int j=0; j < maxiSettings::channels; ++j) {
     mDataPosition = mDataPosition + mSpeed->get();

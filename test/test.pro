@@ -9,6 +9,7 @@ TESTS = \
   006_filters.config \
   007_noise.config \
   008_deadlock.config \
+  009_filename.config \
   100_bandpassfilter.config \
   101_chorusfilter.config \
   102_compressorfilter.config \

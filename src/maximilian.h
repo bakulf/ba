@@ -265,6 +265,8 @@ public:
 	double play();
 	
 	double playOnce();
+
+	bool canPlay() const;
 	
 	double playOnce(double speed);
 	

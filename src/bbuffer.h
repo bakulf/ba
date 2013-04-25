@@ -3,6 +3,8 @@
 
 #include "bengine.h"
 
+#include "maximilian.h"
+
 class BGenerator;
 class BApplication;
 class BScriptEngine;
@@ -20,10 +22,12 @@ public:
   enum TypeData {
     NoData,
     RecData,
+    FileData,
     GeneratorData,
   };
 
   void setRecData(double* aData, size_t aSize);
+  void setFileData(QString aFilename);
   void setGeneratorData(BGenerator* aGenerator);
 
   void setTypeData(TypeData aType) { mType = aType; }
@@ -47,15 +51,23 @@ public:
   void output(double* aOutput);
 
 private:
-  void outputLoop(double* aOutput);
-  void outputNoLoop(double* aOutput);
+  void recOutputLoop(double* aOutput);
+  void recOutputNoLoop(double* aOutput);
+
+  void fileOutputLoop(double* aOutput);
+  void fileOutputNoLoop(double* aOutput);
 
 private:
+  BApplication* mApp;
+
   TypeData mType;
 
   double* mData;
   size_t mDataSize;
   double mDataPosition;
+
+  QString mFilename;
+  maxiSample mMaxi;
 
   BGeneratorRef mGenerator;
 

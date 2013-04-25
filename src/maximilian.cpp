@@ -621,7 +621,7 @@ bool maxiSample::read()
 		length=myDataSize*(0.5/myChannels);
 		inFile.close(); // close the input file
 		
-        cout << "Ch: " << myChannels << ", len: " << length << endl;
+        //cout << "Ch: " << myChannels << ", len: " << length << endl;
 		if (myChannels>1) {
 			int position=0;
 			int channel=readChannel*2;
@@ -635,10 +635,11 @@ bool maxiSample::read()
         memcpy(temp, myData, myDataSize * sizeof(char));
         
         free(myData);
+        myData = NULL;
 		
 	}else {
 //		cout << "ERROR: Could not load sample: " <<myPath << endl; //This line seems to be hated by windows 
-        printf("ERROR: Could not load sample.");
+        //printf("ERROR: Could not load sample.");
 
 	}
 	
@@ -664,6 +665,12 @@ double maxiSample::playOnce() {
     }
 	return output;
 
+}
+
+bool maxiSample::canPlay() const
+{
+	double p=position+((speed*chandiv)/(maxiSettings::sampleRate/mySampleRate));
+	return ((long) p<length);
 }
 
 //Same as above but takes a speed value specified as a ratio, with 1.0 as original speed
@@ -1057,7 +1064,7 @@ void maxiSample::getLength() {
 }
 
 void maxiSample::setLength(unsigned long numSamples) {
-    cout << "Length: " << numSamples << endl;
+    //cout << "Length: " << numSamples << endl;
     short *newData = (short*) malloc(sizeof(short) * numSamples);
     if (NULL!=temp) {
         unsigned long copyLength = min((unsigned long)length, numSamples);

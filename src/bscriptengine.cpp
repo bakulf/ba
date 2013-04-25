@@ -100,13 +100,20 @@ BScriptEngine::funcPlay(QScriptContext* aContext,
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
 
   if (aContext->argumentCount()) {
-    BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
-    if (!generator) {
-      return aContext->throwError(QScriptContext::SyntaxError,
-                                  "Wrong usage of play([generator]).");
-    }
+    if (aContext->argument(0).isString() &&
+        !aContext->argument(0).toString().isEmpty()) {
+      buffer->setFileData(aContext->argument(0).toString());
+    } else {
+      BGeneratorShell* shell =
+        static_cast<BGeneratorShell*>(aContext->argument(0).toQObject());
+      BGeneratorRef generator = shell ? shell->get() : NULL;
+      if (!generator) {
+        return aContext->throwError(QScriptContext::SyntaxError,
+                                    "Wrong usage of play([generator]).");
+      }
 
-    buffer->setGeneratorData(generator);
+      buffer->setGeneratorData(generator);
+    }
   }
 
   buffer->play();
