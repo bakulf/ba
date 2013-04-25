@@ -99,9 +99,7 @@ BScriptEngine::funcPlay(QScriptContext* aContext,
 {
   BBuffer* buffer = static_cast<BBuffer*>(aContext->thisObject().toQObject());
 
-  if (aContext->argumentCount() == 0) {
-    buffer->setTypeData(BBuffer::RecData);
-  } else {
+  if (aContext->argumentCount()) {
     BGeneratorRef generator = BGenerator::numberToGenerator(aContext->argument(0));
     if (!generator) {
       return aContext->throwError(QScriptContext::SyntaxError,
@@ -402,6 +400,7 @@ BScriptEngine::funcRecStop(QScriptContext* aContext,
     }
 
     buffer->setRecData(data, size);
+    buffer->setTypeData(BBuffer::RecData);
   }
 
   return QScriptValue();
