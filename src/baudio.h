@@ -5,7 +5,7 @@
 
 #include <QString>
 
-#include <RtAudio.h>
+#include "RtAudio.h"
 #include "maximilian.h"
 
 class BApplication;

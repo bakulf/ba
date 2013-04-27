@@ -8,16 +8,21 @@ QT += xml
 MOC_DIR     = .moc
 OBJECTS_DIR = .obj
 
-LIBS = -lrtaudio
+LIBS += ../libs/maximilian/libmaximilian.a \
+        ../libs/rtaudio/librtaudio.a
 
 QMAKE_CXXFLAGS *= -Wall -ggdb
 
 DEFINES += BA_UNITTEST
 
 INCLUDEPATH += filters \
-               generators
+               generators \
+               ../libs/maximilian \
+               ../libs/rtaudio
 
 DEPENDPATH  += $${INCLUDEPATH}
+
+include(../audio.pri)
 
 FILTERS_HEADERS = bchorusfilter.h \
                   bloresfilter.h \
@@ -83,7 +88,6 @@ HEADERS = bapplication.h \
           bmutexlocker.h \
           btimer.h \
           bgenerator.h \
-          maximilian.h \
           $${FILTERS_HEADERS} \
           $${GENERATORS_HEADERS}
 
@@ -97,6 +101,5 @@ SOURCES = main.cpp \
           bmutexlocker.cpp \
           btimer.cpp \
           bgenerator.cpp \
-          maximilian.cpp \
           $${FILTERS_SOURCES} \
           $${GENERATORS_SOURCES}

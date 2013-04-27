@@ -8,4 +8,6 @@ isEmpty( ISQT4 ) {
 
 TEMPLATE = subdirs
 CONFIG  += ordered
-SUBDIRS  = src test
+SUBDIRS  = libs src test
+
+src.depends = libs
