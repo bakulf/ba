@@ -1,6 +1,6 @@
 TEMPLATE = lib
 CONFIG += staticlib
-HEADERS = rtaudio.h
-SOURCES = rtaudio.cpp
+HEADERS = RtAudio.h RtError.h    
+SOURCES = RtAudio.cpp
 
 include(../../audio.pri)

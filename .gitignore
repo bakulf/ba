@@ -10,3 +10,4 @@ core.*
 *.a
 *.o
 ba
+vendors
