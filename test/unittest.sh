@@ -6,7 +6,7 @@ echo
 
 echo "Running..."
 (
-  echo 't' | ../src/ba $1 1>/dev/null
+  echo 't' | ../src/core/ba $1 1>/dev/null
   status=$?
   if [ $status != 0 ]; then
     echo "======> BAUNITTEST FAILURE - PROGRAM RETURNS $status <======"
