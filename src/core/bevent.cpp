@@ -5,10 +5,11 @@
 
 #include <iostream>
 
-BEvent::BEvent(BApplication* aApp, QString aCode)
+BEvent::BEvent(BApplication* aApp, QString aCode, QString aName)
 : QObject(aApp)
 , mApp(aApp)
 , mCode(aCode)
+, mName(aName)
 {
 }
 
@@ -27,16 +28,14 @@ BEvent::run()
   if (engine->hasUncaughtException()) {
     int line = engine->uncaughtExceptionLineNumber();
     QString e;
-    e.sprintf("Uncaught exception at line %d: %s", line,
-              qPrintable(result.toString()));
-    engine->app()->printMessage(e);
+    engine->app()->printMessage(QString("Uncaught exception at line %1: %2")
+                                .arg(line).arg(result.toString()));
   }
 }
 
 BEventManager::BEventManager()
 {
 }
-
 
 BEventManager::~BEventManager()
 {
@@ -48,12 +47,13 @@ BEventManager::add(char aCh, BEvent* aEvent)
   mMap[aCh] = aEvent;
 }
 
-void
+QString
 BEventManager::handle(char aCh)
 {
   if (!mMap.contains(aCh)) {
-    return;
+    return QString();
   }
 
   mMap[aCh]->run();
+  return mMap[aCh]->name();
 }

@@ -103,7 +103,10 @@ BApplication::readStdin(int)
     return;
   }
 
-  mEventManager.handle(buf);
+  QString msg = mEventManager.handle(buf);
+  if (!msg.isEmpty()) {
+    printMessage(QString("Event: %1").arg(msg));
+  }
 }
 
 void
@@ -120,7 +123,8 @@ BApplication::refreshScreen()
     size = snprintf(str, sizeof(str), "\033[%d;0f\033[K", ++line);
     writeES(str, size);
 
-    size = snprintf(str, sizeof(str), "Buffer: %s%s\n",
+    size = snprintf(str, sizeof(str), "%s: %s%s\n",
+                    qPrintable(buffer->name()),
                     buffer == mCurrentBuffer ? " -SELECTED- " : "",
                     buffer->playing() ? " -PLAYING- " : "");
     writeReal(str, size);
@@ -324,10 +328,21 @@ BApplication::readConfigAudio(QDomElement& aElement)
     }
 
     if (e.tagName() == "buffers") {
-      int buffers = e.text().toInt();
-      for (int i = 0; i < buffers; ++i) {
-        BBuffer *buffer = new BBuffer(this);
-        mBuffers << buffer;
+      QDomNode n = e.firstChild();
+      if (n.isText()) {
+        int buffers = e.text().toInt();
+        for (int i = 0; i < buffers; ++i) {
+          BBuffer *buffer = new BBuffer(this, "");
+          mBuffers << buffer;
+        }
+      } else {
+        for (; !n.isNull(); n = n.nextSibling()) {
+          QDomElement ee = n.toElement();
+          if (ee.tagName() == "buffer") {
+            BBuffer *buffer = new BBuffer(this, ee.text());
+            mBuffers << buffer;
+          }
+        }
       }
     }
   }
@@ -385,7 +400,7 @@ BApplication::readConfigCode(QDomElement& aElement)
 
     if (e.tagName() == "key") {
       mEventManager.add(e.attribute("char")[0].toAscii(),
-                        new BEvent(this, e.text()));
+                        new BEvent(this, e.text(), e.attribute("name")));
     }
   }
 
@@ -409,9 +424,7 @@ BApplication::reloadConfig()
 
   QFile file(mConfigFile);
   if (!file.open(QIODevice::ReadOnly)) {
-    QString msg;
-    msg.sprintf("the config file '%s' cannot be opened.", qPrintable(mConfigFile));
-    printMessage(msg);
+    printMessage(QString("the config file '%1' cannot be opened.").arg(mConfigFile));
     return;
   }
 
@@ -420,17 +433,13 @@ BApplication::reloadConfig()
   int errorLine(0);
   int errorColumn(0);
   if (!dom.setContent(&file, false, &errorMsg, &errorLine, &errorColumn)) {
-    QString msg;
-    msg.sprintf("the config file '%s' cannot be parsed.", qPrintable(mConfigFile));
-    printMessage(msg);
+    printMessage(QString("the config file '%1' cannot be parsed.").arg(mConfigFile));
     return;
   }
 
   QDomElement root = dom.documentElement();
   if (root.tagName() != "BA") {
-    QString msg;
-    msg.sprintf("the config file '%s' is not valid for this application.", qPrintable(mConfigFile));
-    printMessage(msg);
+    printMessage(QString("the config file '%1' is not valid for this application.").arg(mConfigFile));
     return;
   }
 

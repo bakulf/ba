@@ -100,10 +100,7 @@ BTimerData::timeout()
 
     int line = engine->uncaughtExceptionLineNumber();
     QScriptValue result = engine->uncaughtException();
-    QString e;
-    e.sprintf("Uncaught exception at line %d: %s", line,
-              qPrintable(result.toString()));
-
-    engine->app()->printMessage(e);
+    engine->app()->printMessage(QString("Uncaught exception at line %1: %2")
+                                .arg(line).arg(result.toString()));
   }
 }

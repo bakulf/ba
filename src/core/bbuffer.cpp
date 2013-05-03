@@ -2,9 +2,10 @@
 #include "bapplication.h"
 #include "bnumbergenerator.h"
 
-BBuffer::BBuffer(BApplication* aApp)
+BBuffer::BBuffer(BApplication* aApp, QString aName)
 : QObject(aApp)
 , mApp(aApp)
+, mName(aName)
 , mType(NoData)
 , mData(NULL)
 , mDataSize(0)
@@ -17,6 +18,16 @@ BBuffer::BBuffer(BApplication* aApp)
 
 BBuffer::~BBuffer()
 {
+}
+
+QString
+BBuffer::name() const
+{
+  if (mName.isEmpty()) {
+    return "Buffer";
+  }
+
+  return mName;
 }
 
 void
@@ -44,9 +55,7 @@ BBuffer::setFileData(QString aFilename)
     return;
   }
 
-  QString msg;
-  msg.sprintf("Error loading file `%s'", qPrintable(mFilename));
-  mApp->printMessage(msg);
+  mApp->printMessage(QString("Error loading file `%1'").arg(mFilename));
 }
 
 void

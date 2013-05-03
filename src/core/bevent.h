@@ -12,14 +12,20 @@ class BEvent : public QObject
   Q_DISABLE_COPY(BEvent)
 
 public:
-  BEvent(BApplication* aParent, QString aCode);
+  BEvent(BApplication* aParent, QString aCode, QString aName);
   virtual ~BEvent();
 
   void run();
 
+  QString name() const
+  {
+    return mName;
+  }
+
 private:
   BApplication* mApp;
   QString mCode;
+  QString mName;
 };
 
 class BEventManager : public QObject
@@ -32,7 +38,7 @@ public:
 
   void add(char aCh, BEvent* aEvent);
 
-  void handle(char aCh);
+  QString handle(char aCh);
 
 private:
   QMap<char, BEvent*> mMap;

@@ -351,7 +351,5 @@ BEngineFilter::funcFilterEnabled(QScriptContext* aContext,
 QString
 BEngineFilter::writeFilter()
 {
-  QString line;
-  line.sprintf("Filter: %s", qPrintable(mName));
-  return line;
+  return QString("Filter: %1").arg(mName);
 }

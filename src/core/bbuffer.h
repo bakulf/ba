@@ -16,7 +16,7 @@ class BBuffer : public QObject
   Q_DISABLE_COPY(BBuffer)
 
 public:
-  BBuffer(BApplication* aApp);
+  BBuffer(BApplication* aApp, QString aName);
   virtual ~BBuffer();
 
   enum TypeData {
@@ -25,6 +25,8 @@ public:
     FileData,
     GeneratorData,
   };
+
+  QString name() const;
 
   void setRecData(double* aData, size_t aSize);
   void setFileData(QString aFilename);
@@ -59,6 +61,8 @@ private:
 
 private:
   BApplication* mApp;
+
+  QString mName;
 
   TypeData mType;
 

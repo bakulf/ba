@@ -154,15 +154,11 @@ BAudio::byte2str(size_t size)
   QString value;
 
   if (m > 0) {
-    QString tmp;
-    tmp.sprintf("%dM", m);
-    value.append(tmp);
+    value.append(QString("%1M").arg(m));
   }
 
   if (k > 0) {
-    QString tmp;
-    tmp.sprintf("%dK", k);
-    value.append(tmp);
+    value.append(QString("%1K").arg(k));
   }
 
   return value;
