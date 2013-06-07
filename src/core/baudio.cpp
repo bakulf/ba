@@ -170,8 +170,9 @@ BAudio::play(double* aOutput)
   memset(aOutput, 0, sizeof(double) * maxiSettings::channels);
 
   QList<BBuffer*> buffers = mApp->buffers();
-  foreach (BBuffer* buffer, buffers) {
+  int length = buffers.length();
 
+  foreach (BBuffer* buffer, buffers) {
     if (buffer->canPlay()) {
       double tmp[maxiSettings::channels];
       memset(tmp, 0, sizeof(double) * maxiSettings::channels);
@@ -179,7 +180,7 @@ BAudio::play(double* aOutput)
       buffer->output(tmp);
 
       for (int j=0; j < maxiSettings::channels; ++j) {
-        aOutput[j] = (aOutput[j] + tmp[j]) / 2;
+        aOutput[j] += tmp[j] / length;
       }
     }
   }
